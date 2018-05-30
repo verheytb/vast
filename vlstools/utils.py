@@ -71,6 +71,20 @@ def tprint(contents, ontop=False):
         print(datetime.now().strftime("%Y-%m-%d %H:%M:%S") + "   " + contents, end="\r")
 
 
+def quiet_exp(x):
+    """
+
+    :param x:
+    :return:
+    """
+
+    try:
+        result = exp(x)
+    except OverflowError:
+        result = float("inf")
+    return result
+
+
 def get_trailing_number(s):
     m = re.search(r'\d+$', s)
     return int(m.group()) if m else None
@@ -86,13 +100,15 @@ def chunk_combinations(iterable, r, start_indices=None, stop_indices=None):
     # combinations('ABCD', 2, [2,3], [3,4]) --> CD
     pool = tuple(iterable)
     n = len(pool)
+    assert start_indices is None or len(start_indices) == r
+    assert stop_indices is None or len(stop_indices) == r
     if r > n:
         return
     if start_indices:
         indices = start_indices
     else:
         indices = list(range(r))
-    yield tuple(pool[i] for i in indices)
+    yield tuple(pool[k] for k in indices)
     while True:
         for i in reversed(range(r)):
             if indices[i] != i + n - r:
@@ -105,7 +121,7 @@ def chunk_combinations(iterable, r, start_indices=None, stop_indices=None):
         if indices == stop_indices:
             return
         else:
-            yield tuple(pool[i] for i in indices)
+            yield tuple(pool[k] for k in indices)
 
 
 def interval_start_iterator(l, n, k):
@@ -130,6 +146,22 @@ def interval_start_iterator(l, n, k):
         yield starts
 
 
+def choose(n, k):
+    """
+    A fast way to calculate binomial coefficients by Andrew Dalke (contrib).
+    """
+    if 0 <= k <= n:
+        ntok = 1
+        ktok = 1
+        for t in range(1, min(k, n - k) + 1):
+            ntok *= n
+            ktok *= t
+            n -= 1
+        return ntok // ktok
+    else:
+        return 0
+
+
 def normalize(vector):
     """
     calculates the unit-length vector of a given vector
@@ -145,6 +177,34 @@ def round_up(x):
     return np.ceil(x/(10**pos))*10**pos
 
 
+def is_sublist(smaller, larger):
+    """
+    Tests if one list is found as a slice of a larger list
+    :param smaller: a list to be tested
+    :param larger: a list that might contain a smaller list
+    :return: True or False
+    """
+    for i in range(len(larger) - len(smaller) + 1):
+        if smaller == larger[i:i+len(smaller)]:
+            return True
+    return False
+
+
 def get_tagstring(refid, tags):
     """Creates a string from a reference ID and a sequence of tags, for use in report filenames."""
     return "_".join([refid] + [t[0] + "." + (t[1] if t[1] else "None") for t in tags])
+
+
+def qq_values(sample1, sample2):
+    """
+    Computes the qqplot comparing two lists of samples
+    :param sample1: a list of bootstrapping 1D datasets (a list of lists of ints)
+    :param sample2: a list of bootstrapping 1D datasets (a list of lists of ints)
+    :return: a list of sample1, sample2 duples for plotting in a qqplot.
+    """
+    s1 = []
+    s2 = []
+    for q in np.arange(start=0.1, stop=100, step=0.1):
+        s1.append(np.mean([np.percentile(sample_set, q) for sample_set in sample1]))
+        s2.append(np.mean([np.percentile(sample_set, q) for sample_set in sample2]))
+    return s1, s2

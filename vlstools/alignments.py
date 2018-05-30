@@ -5,18 +5,26 @@ import os
 import pickle
 import shutil
 import multiprocessing
+import warnings
 from itertools import combinations
 from random import randrange, choice
 from types import SimpleNamespace
 # dependencies
+import numpy as np
 from Bio import pairwise2
+with warnings.catch_warnings():
+    warnings.simplefilter("ignore")
+    from Bio.codonalign import CodonSeq
+    from Bio.codonalign.codonseq import cal_dn_ds
 try:
     import pysam
 except ImportError:
     pysam = False
-
 # included
-import simanneal  # alternately, use "import simanneal" if installed on the machine
+try:
+    import simanneal
+except ImportError:
+    from vlstools import simanneal
 pairwise2.MAX_ALIGNMENTS = 10000
 
 
@@ -176,6 +184,48 @@ def count_snps(transform, count_indels_once=False):
             else:
                 raise ValueError("Transform contained invalid operation: %s" % op[1])
         return count
+
+
+def find_tandem_repeats(seq, minhomology=3, minunitsize=1):
+    """
+    Finds all tandem repeats including those partial repeats (those with at least <minhomology> number of bases
+    contiguous with the last unit). These include overlapping or equivalent repeats (2-mers that are also 4-mers, for
+    example).
+    :param sequence:
+    :return: a list of (start, stop, unitlength) tuples.
+    """
+    results = []
+    for length in range(minunitsize, len(seq)):
+        window = length + minhomology
+        for x in range(len(seq)-window+1):
+            unitseq = seq[x:x+length]
+            nextseq = seq[x+length:x+window]
+            if (unitseq+nextseq).startswith(nextseq):
+                if results and results[-1][2] == length and results[-1][1] == x+window-1:
+                    results[-1][1] += 1
+                else:
+                    results.append([x, x+length+minhomology, length])
+    return results
+
+
+def is_tandem_repeat(start, stop, unitlength, sequence):
+    """
+
+    :param start: the start (inclusive) of a tandem repeat sequence
+    :param stop: the stop (exclusive) of a tandem repeat sequence
+    :param unitlength: the unit length of the repeat sequence
+    :param sequence: the sequence to which the coordinates refer
+    :return: boolean True or False if the tandem repeat is in the sequence.
+    """
+    subseq = sequence[start:stop]
+    first_unit = subseq[:unitlength]
+    subseq = subseq[unitlength:]
+    while subseq:
+        thisunit = subseq[:unitlength]
+        subseq = subseq[unitlength:]
+        if not first_unit.startswith(thisunit):
+            return False
+    return True
 
 
 def get_mapping(gappy_q, gappy_r):
@@ -473,7 +523,13 @@ def align_cassettes(reference, outputdir, cpus=multiprocessing.cpu_count()):
             shutil.move(os.path.join(outputdir, "%d-sorted.bam" % x), os.path.join(outputdir, "%d.bam" % x))
             pysam.index(os.path.join(outputdir, "%d.bam" % x))
 
-    return {cassette[0]: cassette[2] for cassette in msa}
+
+    # return the first result
+    msa_zero = [(aligned_read_names[cas],
+                transform(reference=reference.seq, mapping=aligned_reads_for_bam[cas][aln].transform),
+                aligned_reads_for_bam[cas][aln]) for cas, aln in enumerate(reduced_results[0][0])]
+
+    return {cassette[0]: cassette[2] for cassette in msa_zero}
 
 
 def cassette_align_worker(arg_tuple):
@@ -521,7 +577,8 @@ def write_bam(filename, refid, refseq, reads_dict):
         for readname, alignment in reads_dict.items():
             a = pysam.AlignedSegment()
             a.query_name = readname
-            a.query_sequence = transform(reference=refseq, mapping=alignment.transform)
+            a.query_sequence = transform(reference=refseq, mapping=alignment.transform,
+                                         start=alignment.start, stop=alignment.end)
             a.reference_id = 0
             a.reference_start = alignment.start
             a.cigar = alignment.cigar
@@ -573,6 +630,15 @@ def nontemplated(mapping, reference):
                      trim_transform(aln.transform, len(reference.seq))]
     nontemplated_mapping = tuple(op for op in mapping if op not in templated_ops)
     return nontemplated_mapping
+
+
+def find_poly_g(sequence, size):
+    assert all(b in "actgACTG" for b in sequence)
+    array = [False for x in sequence]
+    for x, b in enumerate(sequence):
+        if sequence[x:x+size] == "G"*size:
+            array[x] = True
+    return array
 
 
 def get_codon_positions(reference):
@@ -668,9 +734,6 @@ def error_scrub(mapping, window_length=20):
     return scrubbed
 
 
-prealigned_proteins = {}
-
-
 def translate_mapping(mapping: list, reference: SimpleNamespace, templ: bool=True, nontempl: bool=True,
                       correctframe: bool=True, filterframe: bool=True, filternonsense: bool=True):
     """
@@ -705,12 +768,8 @@ def translate_mapping(mapping: list, reference: SimpleNamespace, templ: bool=Tru
     if filternonsense and "_" in protein:
         return []
 
-    if protein in prealigned_proteins:
-        return prealigned_proteins[protein]
-    else:
-        protein_alns = align_proteins(reference.protein, protein)
-        prealigned_proteins[protein] = protein_alns
-        return protein_alns
+    protein_alns = align_proteins(reference.protein, protein)
+    return protein_alns
 
 
 def is_templated(op, reference):
@@ -718,3 +777,81 @@ def is_templated(op, reference):
     templated_ops = {tuple(op) for aln in reference.cassettes_aln.values() for op in
                      trim_transform(aln.transform, len(reference.seq))}
     return tuple(op) in templated_ops
+
+
+def get_dnds(alignment, reference):
+    """
+    Gets the dN (frequency of nonsynonymous mutations) and dS (frequency of synonymous mutations) from an alignment.
+    :param mapping:
+    :param reference:
+    :return: Namespace(dN, dS)
+    """
+    # patch a bug in sequence data in the database TODO
+    if alignment.end == 0:
+        alignment.end = len(reference.seq)
+    codon_starts = [x for x in get_codon_positions(reference=reference) if alignment.start <= x <= alignment.end - 3]
+    reference_codons = "".join([reference.seq[x:x+3] for x in codon_starts])
+    ref_cs = CodonSeq(reference_codons)  # biopython object
+    substitutions = [op for op in alignment.transform if op[1] == "S"]
+    variant_seq = transform(reference=reference.seq, mapping=substitutions)
+    variant_codons = "".join([variant_seq[x:x+3] for x in codon_starts])
+    var_cs = CodonSeq(variant_codons) # biopython object
+    try:
+        dn, ds = cal_dn_ds(ref_cs, var_cs, method="NG86")
+    except KeyError:
+        dn, ds = None, None
+    return SimpleNamespace(dn=dn, ds=ds)
+
+def get_burs(ref_seq, ref_cassettes_aln):
+    """
+    Assemble left and right boundary uncertainty regions (BURs) around each SNP in the cassettes
+    :param reference:
+    :return:
+    """
+    left_burs = {casname: {} for casname in ref_cassettes_aln}
+    right_burs = {casname: {} for casname in ref_cassettes_aln}
+    for casname, casaln in ref_cassettes_aln.items():
+        casaln.transform = trim_transform(casaln.transform, len(ref_seq))
+        for idx, op in enumerate(casaln.transform):
+            if idx == 0:  # first op in transform
+                left_burs[casname][op] = casaln.start
+            else:
+                left_burs[casname][op] = casaln.transform[idx - 1][0]
+            if idx == len(casaln.transform) - 1:  # last op in transform
+                right_burs[casname][op] = casaln.end
+            else:
+                right_burs[casname][op] = casaln.transform[idx + 1][0]
+
+    return SimpleNamespace(left=left_burs, right=right_burs)
+
+
+def get_slips(read, slips, reference):
+    """
+    Return a list of slips from the alignment with the most non-templated SNPs explained by Polymerase slippage events.
+    :param read:
+    :param slips:
+    :param reference:
+    :return:
+    """
+    results_per_aln = []
+    for aln in read.alns:
+        nontemplated_tf = nontemplated(aln.transform, reference)
+        if (nontemplated_tf, reference.name) not in slips:
+            raise ValueError(
+                "Read %s has not been analysed for slippage. Run \"vls label_slippage\" to "
+                "calculate polymerase slippage before exporting report.")
+        slips_by_origin = slips[(nontemplated_tf, reference.name)]
+        result = set(slip for origin in slips_by_origin.values() for slip in origin)
+        nt_idxs_explained = set()
+        for slip in result:
+            for nt_idx in range(slip[0], slip[1] + 1):
+                nt_idxs_explained.add(nt_idx)
+        nontemplated_tf_explained = tuple(op for idx, op in enumerate(nontemplated_tf)
+                                          if idx in nt_idxs_explained)
+        score = count_snps(transform=nontemplated_tf_explained)
+        results_per_aln.append((score, aln, result))
+
+    results_per_aln.sort(key=lambda x: x[0])
+    best_slipset = results_per_aln[0][2]
+    best_alignment = results_per_aln[0][1]
+    return best_slipset, best_alignment

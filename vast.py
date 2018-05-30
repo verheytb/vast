@@ -20,14 +20,21 @@ from datetime import datetime
 from Bio import SeqIO
 from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
+try:
+    import pysam
+except ImportError:
+    pysam = False
 # included
 import vlstools.utils as utl
 import vlstools.reports as rp
 import vlstools.alignments as al
+from vlstools.simulations import simulate_switch_length
+from vlstools.switch_detection import switches_worker
+from vlstools.slip_detection import slippage_worker
 
 
 __author__ = "Theodore (Ted) B. Verhey"
-__version__ = "4.0"
+__version__ = "5.0"
 __email__ = "verheytb@gmail.com"
 __status__ = "Production"
 
@@ -86,6 +93,14 @@ class Database(object):
             utl.tprint('No references in database. Use "vast add_reference" to add.')
             sys.exit()
         return references
+
+    def get_and_check_switches(self):
+        try:
+            switches = self.get("switches")
+        except FileNotFoundError:
+            utl.tprint('Reads have not been analyzed for switches. Run "vast label_switches" first.')
+            sys.exit()
+        return switches
 
 
 if __name__ == "__main__":
@@ -182,10 +197,33 @@ if __name__ == "__main__":
     map_variants_subparser.add_argument("-f", "--force", action="store_true", help="Remap already mapped reads.")
     map_variants_subparser.add_argument("-c", "--cpus", default=multiprocessing.cpu_count(), type=int,
                                         help="Specify the number of CPUs to use for processing.")
-    # map proteins
-    map_proteins_subparser = subparsers.add_parser("map_proteins",
-                                                   help="Translate the variants into protein sequences and map to the "
-                                                        "reference.")
+
+    # analyze switches for already aligned reads
+    label_switches_subparser = subparsers.add_parser("label_switches",
+                                                     help='Infer the most likely switching events to explain templated '
+                                                          'seqence changes for each read. Use "vast report" to output '
+                                                          'the results.')
+    label_switches_subparser.add_argument("-f", "--force", action="store_true",
+                                          help="Override already analyzed reads.")
+    label_switches_subparser.add_argument("-c", "--cpus", default=multiprocessing.cpu_count(), type=int,
+                                          help="Specify the number of CPUs to use for processing.")
+
+    # analyze slippage events for already aligned reads
+    label_slippage_subparser = subparsers.add_parser("label_slippage",
+                                                     help="Do the compu")
+    label_slippage_subparser.add_argument("-f", "--force", action="store_true",
+                                          help="Override already analyzed reads.")
+    label_slippage_subparser.add_argument("-c", "--cpus", default=multiprocessing.cpu_count(), type=int,
+                                          help="Specify the number of CPUs to use for processing.")
+
+    # simulate switch events for comparison of actual to observed length
+    simulate_switches_subparser = subparsers.add_parser("simulate_switch_lengths",
+                                                        help="Do the computational work to simulate switch events and "
+                                                             "measure minimal vs actual lengths.")
+    simulate_switches_subparser.add_argument("-n", "--num_trials", type=int, default=10000,
+                                             help="Specify the number of trials for each switch length.")
+    simulate_switches_subparser.add_argument("-f", "--force", action="store_true",
+                                             help="Override references for which a simulation already exists.")
 
     # generates report of measurements based on customized groupings of the data
     report_subparser = subparsers.add_parser("report", help="Make measurements on groupings of data and export a CSV "
@@ -234,10 +272,10 @@ if __name__ == "__main__":
             references = {}
         # gets reference and cassettes
         with open(args.reference_fasta, "r") as handle:
-            newseq = str(SeqIO.read(handle, "fasta").seq)
+            newseq = str(SeqIO.read(handle, "fasta").seq).upper()
         if args.cassettes:
             with open(args.cassettes, "r") as handle:
-                newcassettes = {c.id: str(c.seq) for c in SeqIO.parse(handle, "fasta")}
+                newcassettes = {c.id: str(c.seq).upper() for c in SeqIO.parse(handle, "fasta")}
         else:
             newcassettes = None
 
@@ -245,7 +283,10 @@ if __name__ == "__main__":
 
         # makes new entry, tests whether it exists already
         new_reference = SimpleNamespace(name=args.name, seq=newseq, offset=args.offset, protein=protein,
-                                        cassettes=newcassettes, cassettes_aln=None, variable_regions=None)
+                                        cassettes=newcassettes, cassettes_aln=None, variable_regions=[],
+                                        sim_switch=None)
+        if not isinstance(args.offset, int):
+            utl.tprint("Error: \"%s\" is not a valid offset. Please provide an integer number." % args.offset)
         if args.name in references:
             utl.tprint("Error: A reference with the same name already exists in the database.")
             sys.exit()
@@ -281,7 +322,7 @@ if __name__ == "__main__":
     elif args.subcommand == "align_cassettes":
         db = Database()
         references = db.get_and_check_references()
-        if args.preset:
+        if args.prealigned:
             with open(args.preset, "rb") as handle:
                 msa = pickle.load(handle)
             cassette_set = {x[0]: x[1] for x in msa}
@@ -293,11 +334,13 @@ if __name__ == "__main__":
                     r.cassettes_aln = {x[0]: x[2] for x in msa}
         else:  # fallback to calculating optimal cassette multiple alignments by hand.
             for r in references.values():
-                if r.cassettes is not None and r.cassettes_aln is None:
-                    reference_dir_name = os.path.join(db.cassette_aln_dir, r.name)
-                    if not os.path.isdir(reference_dir_name):
-                        os.mkdir(reference_dir_name)
-                    r.cassettes_aln = al.align_cassettes(reference=r, outputdir=reference_dir_name)
+                if r.cassettes is not None:
+                    if r.cassettes_aln is None:
+                        reference_dir_name = os.path.join(db.cassette_aln_dir, r.name)
+                        if not os.path.isdir(reference_dir_name):
+                            os.mkdir(reference_dir_name)
+                        r.cassettes_aln = al.align_cassettes(reference=r, outputdir=reference_dir_name)
+                    r.burs = al.get_burs(ref_seq=r.seq, ref_cassettes_aln=r.cassettes_aln)
         db.save(references, "references")
 
     elif args.subcommand == "add_reads":
@@ -308,13 +351,17 @@ if __name__ == "__main__":
             reads = {read.name: read for read in db.get("reads")}  # dict is handy for getting reads by name
         except FileNotFoundError:
             reads = {}
+        with open(args.csv_file, "r") as csvhandle:
+            csvreader = csv.reader(csvhandle)
+            csvreader.__next__()
+            number_of_files = sum(1 for row in csvreader) - 1
 
         # assembles list of reads to be added from input files
         with open(args.csv_file, "r") as csvhandle:
             csvreader = csv.reader(csvhandle)
             new_tag_set = csvreader.__next__()[2:]
             newreads = []
-            for row in csvreader:
+            for filecount, row in enumerate(csvreader):
                 # check file format
                 if any(row[0].lower().endswith(x) for x in (".fna", ".fa", ".fasta")):
                     fastaq_format = "fasta"
@@ -336,9 +383,18 @@ if __name__ == "__main__":
                         else:
                             phred_quality = None
                         tags = {new_tag_set[x]: tag_value for x, tag_value in enumerate(row[2:])}
-                        newreads.append(SimpleNamespace(name=entry.id, seq=str(entry.seq), qual=phred_quality,
-                                                        refid=row[1], tags=tags, alns=None))
-
+                        newread = SimpleNamespace(name=entry.id, seq=str(entry.seq).upper(), qual=phred_quality,
+                                                  refid=row[1], tags=tags, alns=None)
+                        if entry.seq == "":
+                            utl.tprint("Warning: The following read has no sequence and will be excluded:")
+                            print(newread)
+                        else:
+                            if entry.id == "":
+                                utl.tprint("Warning: The following read has no ID:")
+                                print(newread)
+                            newreads.append(newread)
+                utl.tprint("%d of %d samples read into memory." % (filecount, number_of_files), ontop=True)
+        utl.tprint("All %d samples were read into memory. Harmonizing tags..." % number_of_files)
         # go through and add reads and/or tags if appropriate.
         for newread in newreads:
             if newread.name in reads:
@@ -346,7 +402,7 @@ if __name__ == "__main__":
                 # Check that ID matches the same sequence, quality, and reference in the database
                 if not (newread.name == oldread.name and newread.seq == oldread.seq and
                         newread.qual == oldread.qual and newread.refid == oldread.refid):
-                    utl.tprint("Reads with the same IDs as imported reads but different sequences or quality "
+                    utl.tprint("Error: Reads with the same IDs as imported reads but different sequences or quality "
                                "scores were found. Read IDs must match sequences.")
                     sys.exit()
                 if args.replace:
@@ -357,19 +413,19 @@ if __name__ == "__main__":
                     for tag, tagvalue in newread.tags.items():
                         if (tag in oldread.tags and args.force) or args.merge:
                             reads[newread.name].tags[tag] = tagvalue
-
             else:
                 reads[newread.name] = newread
 
         # goes through all reads and makes sure all of them have the same tag categories; if a read doesn't have a
         # particular tag, this creates it, and fills it with a 'None' value.
-        all_tags = [tag for read in reads.values() for tag in read.tags]
+        all_tags = {tag for read in reads.values() for tag in read.tags}
         for read in reads.values():
             for tag in all_tags:
                 if tag not in read.tags:
                     read.tags[tag] = None
 
         # converts reads dictionary back to list and saves.
+        utl.tprint("Saving database to disk...")
         db.save(list(reads.values()), "reads")
 
     elif args.subcommand == "dbstats":
@@ -419,11 +475,11 @@ if __name__ == "__main__":
             # export FASTA file of reference
             with open(basename + ".fasta", "w") as handle:
                 SeqIO.write(SeqRecord(seq=Seq(ref.seq), id=ref.name, description=""), handle, "fasta")
+            pysam.faidx(basename + ".fasta")
             if ref.cassettes_aln is not None:
                 # exports a bam file for the aligned cassettes of each reference.
                 al.write_bam(filename=basename + ".bam", refid=ref.name, refseq=ref.seq,
                              reads_dict=ref.cassettes_aln)
-
 
     elif args.subcommand == "map":
         db = Database()
@@ -452,65 +508,175 @@ if __name__ == "__main__":
                 if count % 100 == 0 or count == len(unique_mappables):
                     db.save(reads, "reads")
 
-    elif args.subcommand == "map_proteins":
+
+    elif args.subcommand == "label_switches":
         db = Database()
         reads = db.get_and_check_reads()
-        if args.force:
-            for read in reads:
-                read.protein_aln = None
         references = db.get_and_check_references()
-        cached_alignments = {}  # stores already computed protein alignments to save time
-        for x, read in enumerate(reads):
-            reference = references[read.refid]
-            read.protein_aln = {"inframe_native_all": [],
-                                "inframe_native_templated": [],
-                                "inframe_native_nontemplated": [],
-                                "inframe_corrected_all": [],
-                                "inframe_corrected_templated": [],
-                                "inframe_corrected_nontemplated": []}
-            if reference.cassettes_aln:
-                for aln in read.alns:
-                    mapping = aln.transform
-                    # 1. Proteins from all in-frame alns, no error-correction.
-                    protein_alns = al.translate_mapping(mapping=mapping, reference=reference, templ=True, nontempl=True,
-                                                        correctframe=False, filterframe=True, filternonsense=True)
-                    read.protein_aln["inframe_native_all"].extend(protein_alns)
+        try:
+            results = db.get("switches")
+        except FileNotFoundError:
+            results = {}
 
-                    # 2. Proteins from templated changes only, no error-correction.
-                    protein_alns = al.translate_mapping(mapping=mapping, reference=reference, templ=True,
-                                                        nontempl=False, correctframe=False, filterframe=True,
-                                                        filternonsense=True)
-                    read.protein_aln["inframe_native_templated"].extend(protein_alns)
+        if not all(r.alns is not None for r in reads):
+            utl.tprint("Not all reads are mapped to a reference. Run \"vast map\" to align the reads first.")
+            sys.exit()
+        excluded_refs = [ref.name for ref in references.values() if not ref.cassettes_aln]
+        if excluded_refs:
+            utl.tprint("Warning: Reads mapped to the following references will not be analyzed for switching because "
+                       "there is either no cassettes, or the cassettes are not aligned: " + ", ".join(excluded_refs))
+        # make a list of unique (templated) transforms to avoid doing the same analysis multiple times
+        unique_transforms = set()
+        for r in reads:
+            if r.refid not in excluded_refs:
+                for aln in r.alns:
+                    templated_transform = al.templated(aln.transform, references[r.refid])
+                    unique_transforms.add((templated_transform, r.refid))
 
-                    # 3. Proteins from nontemplated changes only, no error-correction.
-                    protein_alns = al.translate_mapping(mapping=mapping, reference=reference, templ=False,
-                                                        nontempl=True, correctframe=False, filterframe=True,
-                                                        filternonsense=True)
-                    read.protein_aln["inframe_native_nontemplated"].extend(protein_alns)
+        # counter to keep track of finished work
+        counter = utl.Counter()
+        total = len(unique_transforms)
 
-                    # 4. Proteins from all in-frame alns, with error-correction.
-                    protein_alns = al.translate_mapping(mapping=mapping, reference=reference, templ=True, nontempl=True,
-                                                        correctframe=True, filterframe=True, filternonsense=True)
-                    read.protein_aln["inframe_corrected_all"].extend(protein_alns)
+        # Sets up the queues
+        taskQueue = multiprocessing.Queue()
+        for ut in unique_transforms:
+            templated_transform, refid = ut
+            if ut not in results or isinstance(results[ut], int) or args.force:
+                taskQueue.put((templated_transform, refid))
+            else:
+                counter.increment()
+        resultQueue = multiprocessing.Queue()
+        # Starts a process to save results
+        def switches_writer():
+            write_counter = 0
+            while counter.value < total or not resultQueue.empty():     # When the counter is full, final results may
+                read_mapping, refid, switch_sets = resultQueue.get()    # not yet be written to disk, hence the need to
+                results[(read_mapping, refid)] = switch_sets            # check both conditions before quitting.
+                if write_counter % 250 == 0:
+                    db.save(results, "switches")
+                write_counter += 1
+            db.save(results, "switches")
 
-                    # 5. Proteins from templated changes only, with error-correction.
-                    protein_alns = al.translate_mapping(mapping=mapping, reference=reference, templ=True,
-                                                        nontempl=False, correctframe=True, filterframe=True,
-                                                        filternonsense=True)
-                    read.protein_aln["inframe_corrected_templated"].extend(protein_alns)
+        writer_process = multiprocessing.Process(target=switches_writer, args=())
+        writer_process.start()
 
-                    # 6. Proteins from nontemplated changes only, with error-correction.
-                    protein_alns = al.translate_mapping(mapping=mapping, reference=reference, templ=False,
-                                                        nontempl=True, correctframe=True, filterframe=True,
-                                                        filternonsense=True)
-                    read.protein_aln["inframe_corrected_nontemplated"].extend(protein_alns)
-            utl.tprint("Finished %d of %d reads" % (x, len(reads)), ontop=True)
-        db.save(reads, "reads")
+        # starts the processes
+        process_list = [multiprocessing.Process(target=switches_worker,
+                                                args=(taskQueue, resultQueue, counter, references))
+                        for i in range(args.cpus)]
+        for c, i in enumerate(process_list, start=1):
+            i.start()
+            utl.tprint("Started %d processes" % c, ontop=True)
+        print()  # carriage return
+
+        # Every 0.1 seconds, updates terminal and checks for dead processes
+        while counter.value < total:
+            utl.tprint("Computing switches for %d of %d unique reads." % (counter.value, total), ontop=True)
+            sys.stdout.flush()
+            for x, i in enumerate(process_list):
+                if not i.is_alive():
+                    i.join()
+                    process_list[x] = multiprocessing.Process(target=switches_worker,
+                                                              args=(taskQueue, resultQueue, counter, references))
+                    process_list[x].start()
+            sleep(0.2)
+
+        for i in process_list:
+            i.join()
+
+        # stops writer process
+        writer_process.join()
+        utl.tprint("Computed switches for all %d reads.              " % total)
+
+    elif args.subcommand == "simulate_switch_lengths":
+        simulate_switch_length(db=Database(), num_trials=args.num_trials, recompute=args.force)
+
+    elif args.subcommand == "label_slippage":
+        db = Database()
+        reads = db.get_and_check_reads()
+        references = db.get_and_check_references()
+        try:
+            results = db.get("slips")
+        except FileNotFoundError:
+            results = {}
+
+        # Check for mapped reads and cassettes
+        if not all(r.alns is not None for r in reads):
+            utl.tprint("Not all reads are mapped to a reference. Run \"vast map\" to align the reads first.")
+            sys.exit()
+        excluded_refs = [ref.name for ref in references.values() if not ref.cassettes_aln]
+        if excluded_refs:
+            utl.tprint("Warning: Reads mapped to the following references will not be analyzed for slippage because "
+                       "there is either no cassettes, or the cassettes are not aligned: " + ", ".join(excluded_refs))
+
+        # make a list of unique (nontemplated) transforms to avoid doing the same analysis multiple times
+        unique_transforms = set()
+        for r in reads:
+            if r.refid not in excluded_refs:
+                for aln in r.alns:
+                    nontemplated_transform = al.nontemplated(aln.transform, references[r.refid])
+                    unique_transforms.add((nontemplated_transform, r.refid))
+
+        # counter to keep track of finished work
+        counter = utl.Counter()
+        total = len(unique_transforms)
+
+        # Sets up the queues
+        taskQueue = multiprocessing.Queue()
+        for ut in unique_transforms:
+            if ut not in results or args.force:
+                taskQueue.put(ut)
+            else:
+                counter.increment()
+        resultQueue = multiprocessing.Queue()
+
+        # Starts a process to save results
+        def slippage_writer():
+            writecount = 0
+            while counter.value < total:
+                read_mapping, refid, slip_set = resultQueue.get()
+                results[(read_mapping, refid)] = slip_set
+                writecount += 1
+                if writecount % 100 == 0:
+                    db.save(results, "slips")
+            db.save(results, "slips")
+
+        writer_process = multiprocessing.Process(target=slippage_writer, args=())
+        writer_process.start()
+
+        # starts the processes
+        process_list = [multiprocessing.Process(target=slippage_worker, args=(taskQueue, resultQueue, counter,
+                                                                              references))
+                        for i in range(args.cpus)]
+        for c, i in enumerate(process_list, start=1):
+            i.start()
+            utl.tprint("Started %d processes" % c, ontop=True)
+        print()  # carriage return
+
+        # Every 0.1 seconds, updates terminal and checks for dead processes
+        while counter.value < total:
+            utl.tprint("Computing slippage events for %d of %d unique reads." % (counter.value, total), ontop=True)
+            sys.stdout.flush()
+            for x, i in enumerate(process_list):
+                if not i.is_alive():
+                    i.join()
+                    process_list[x] = multiprocessing.Process(target=slippage_worker,
+                                                              args=(taskQueue, resultQueue, counter, references))
+                    process_list[x].start()
+            sleep(0.2)
+
+        for i in process_list:
+            i.join()
+
+        # stops writer process
+        writer_process.join()
+        utl.tprint("Computed slippage events for all %d unique reads.              " % total)
 
     elif args.subcommand == "report":
         db = Database()
         reads = db.get_and_check_reads()
         references = db.get_and_check_references()
+        switches = db.get_and_check_switches()
 
         # separate data into bins. Bins are always separated by sequences with different references; the --groupby
         # parameter also allows the data to be further split by any or all of the sample tags.
@@ -572,7 +738,14 @@ if __name__ == "__main__":
                             read_subset.append(r)
 
         # sort by order of groupby
-        for word in (reversed(args.groupby) if args.groupby else []):
+        if args.groupby:
+            if args.groupby == ["+"]:
+                sort_order = sorted(valid_tags)
+            else:
+                sort_order = args.groupby
+        else:
+            sort_order = []
+        for word in reversed(sort_order):
             binned_data.sort(key=lambda x: dict(x[1])[word])
         # sort by reference
         binned_data.sort(key=lambda x: x[0])
@@ -583,7 +756,10 @@ if __name__ == "__main__":
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         reportdir = os.path.join(db.reportdir, timestamp + "_" + args.metric)
         if args.groupby:
-            reportdir += "_groupby_" + ".".join(args.groupby)
+            if args.groupby == ["+"]:
+                reportdir += "_groupby_all"
+            else:
+                reportdir += "_groupby_" + ".".join(args.groupby)
         for ifilt in include_filter:
             reportdir += "_include_" + ifilt + "_" + ".".join(include_filter[ifilt])
         for efilt in exclude_filter:

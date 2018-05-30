@@ -1,7 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="90d33c67-6bdc-4c61-80fc-133c5c21f8e0" name="Default" comment="" />
+    <list default="true" id="90d33c67-6bdc-4c61-80fc-133c5c21f8e0" name="Default" comment="VAST 5.0 Release. Includes many more reports and speed improvements in a number of areas.">
+      <change afterPath="$PROJECT_DIR$/vlstools/simulations.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vlstools/slip_detection.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vlstools/switch_detection.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vlstools/zip.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vast.py" beforeDir="false" afterPath="$PROJECT_DIR$/vast.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vlstools/alignments.py" beforeDir="false" afterPath="$PROJECT_DIR$/vlstools/alignments.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vlstools/reports.py" beforeDir="false" afterPath="$PROJECT_DIR$/vlstools/reports.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/vlstools/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/vlstools/utils.py" afterDir="false" />
+    </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -11,14 +21,35 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="vast.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="vast.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/vast.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="476">
-              <caret line="28" column="39" lean-forward="true" selection-start-line="28" selection-start-column="39" selection-end-line="28" selection-end-column="39" />
+            <state relative-caret-position="17">
+              <caret line="28" column="29" selection-start-line="28" selection-start-column="29" selection-end-line="28" selection-end-column="29" />
               <folding>
                 <element signature="e#379#394#0" expanded="true" />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="alignments.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/vlstools/alignments.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="189">
+              <caret line="812" column="53" lean-forward="true" selection-start-line="812" selection-start-column="53" selection-end-line="812" selection-end-column="53" />
+              <folding>
+                <element signature="e#35#44#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="reports.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/vlstools/reports.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="-1785">
+              <caret line="2369" column="17" selection-start-line="2369" selection-start-column="17" selection-end-line="2369" selection-end-column="17" />
             </state>
           </provider>
         </entry>
@@ -53,10 +84,10 @@
     <option name="CHANGED_PATHS">
       <list>
         <option value="$PROJECT_DIR$/vlstools/utils.py" />
-        <option value="$PROJECT_DIR$/vlstools/alignments.py" />
         <option value="$PROJECT_DIR$/README.md" />
-        <option value="$PROJECT_DIR$/vlstools/reports.py" />
         <option value="$PROJECT_DIR$/vast.py" />
+        <option value="$PROJECT_DIR$/vlstools/alignments.py" />
+        <option value="$PROJECT_DIR$/vlstools/reports.py" />
       </list>
     </option>
   </component>
@@ -68,21 +99,10 @@
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectView">
-    <navigator currentView="ProjectPane" proportions="" version="1">
-      <flattenPackages />
-      <showMembers />
-      <showModules />
-      <showLibraryContents />
-      <hideEmptyPackages />
-      <abbreviatePackageNames />
-      <autoscrollToSource />
-      <autoscrollFromSource />
-      <sortByType />
-      <manualOrder />
+    <navigator proportions="" version="1">
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scratches" />
       <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
@@ -137,9 +157,6 @@
         </RuleState>
       </list>
     </option>
-  </component>
-  <component name="ShelveChangesManager" show_recycled="false">
-    <option name="remove_strategy" value="false" />
   </component>
   <component name="SvnConfiguration">
     <configuration />
@@ -227,28 +244,29 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
+    <editor active="true" />
     <layout>
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.1684435" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
-      <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
-      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
-      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
-      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Data View" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
-      <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Debug Logs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
-      <window_info id="Execute Anonymous" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32934782" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Salesforce" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.16807166" />
+      <window_info anchor="bottom" id="TODO" order="6" weight="0.32897604" />
+      <window_info anchor="bottom" id="Event Log" order="13" side_tool="true" />
+      <window_info anchor="bottom" id="Find" order="1" weight="0.32897604" />
+      <window_info anchor="bottom" id="Version Control" order="7" weight="0.32897604" />
+      <window_info anchor="bottom" id="Python Console" order="8" />
+      <window_info anchor="bottom" id="Run" order="2" />
+      <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
+      <window_info anchor="bottom" id="Terminal" order="10" />
+      <window_info id="Favorites" order="2" side_tool="true" />
+      <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
+      <window_info anchor="bottom" id="Salesforce" order="9" />
+      <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
+      <window_info anchor="right" id="Commander" order="0" weight="0.4" />
+      <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
+      <window_info anchor="bottom" id="Debug Logs" order="11" />
+      <window_info anchor="bottom" id="Execute Anonymous" order="12" />
+      <window_info anchor="bottom" id="Message" order="0" />
+      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
+      <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
+      <window_info anchor="right" id="Data View" order="3" />
     </layout>
   </component>
   <component name="VcsContentAnnotationSettings">
@@ -264,43 +282,54 @@
     <MESSAGE value="Added sample files to repository" />
     <MESSAGE value="Bugfixes identified during documentation writing." />
     <MESSAGE value="Changes identified from merge with vast4" />
-    <option name="LAST_COMMIT_MESSAGE" value="Changes identified from merge with vast4" />
+    <MESSAGE value="VAST 5.0 Release. Includes many more reports and speed improvements in a number of areas." />
+    <option name="LAST_COMMIT_MESSAGE" value="VAST 5.0 Release. Includes many more reports and speed improvements in a number of areas." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
-      <option name="time" value="1" />
+      <option name="time" value="2" />
     </breakpoint-manager>
-    <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/README.md">
-      <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
-        <state split_layout="SPLIT">
-          <first_editor relative-caret-position="816">
-            <caret line="48" column="0" lean-forward="true" selection-start-line="48" selection-start-column="0" selection-end-line="48" selection-end-column="0" />
-          </first_editor>
-          <second_editor />
+    <entry file="file://$PROJECT_DIR$/vast.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="476">
+          <caret line="28" column="29" selection-start-line="28" selection-start-column="29" selection-end-line="28" selection-end-column="29" />
+          <folding>
+            <element signature="e#379#394#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/vlstools/alignments.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="12750">
+          <caret line="750" column="12" lean-forward="true" selection-start-line="750" selection-start-column="12" selection-end-line="750" selection-end-column="12" />
+          <folding>
+            <element signature="e#35#44#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/README.md" />
     <entry file="file://$PROJECT_DIR$/vlstools/utils.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="2465">
-          <caret line="150" column="0" lean-forward="false" selection-start-line="150" selection-start-column="0" selection-end-line="150" selection-end-column="0" />
+          <caret line="150" selection-start-line="150" selection-end-line="150" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/vlstools/simanneal/anneal.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="357">
-          <caret line="29" column="7" lean-forward="false" selection-start-line="29" selection-start-column="7" selection-end-line="29" selection-end-column="7" />
+          <caret line="29" column="7" selection-start-line="29" selection-start-column="7" selection-end-line="29" selection-end-column="7" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/vlstools/alignments.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="9435">
-          <caret line="563" column="16" lean-forward="false" selection-start-line="563" selection-start-column="4" selection-end-line="563" selection-end-column="16" />
+          <caret line="563" column="16" selection-start-line="563" selection-start-column="4" selection-end-line="563" selection-end-column="16" />
           <folding>
             <element signature="e#35#44#0" expanded="true" />
           </folding>
@@ -310,17 +339,14 @@
     <entry file="file://$PROJECT_DIR$/vlstools/reports.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="16949">
-          <caret line="1010" column="28" lean-forward="false" selection-start-line="1010" selection-start-column="28" selection-end-line="1010" selection-end-column="28" />
-          <folding>
-            <element signature="e#34#43#0" expanded="true" />
-          </folding>
+          <caret line="1010" column="28" selection-start-line="1010" selection-start-column="28" selection-end-line="1010" selection-end-column="28" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/vast.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="306">
-          <caret line="35" column="23" lean-forward="false" selection-start-line="35" selection-start-column="23" selection-end-line="35" selection-end-column="23" />
+          <caret line="35" column="23" selection-start-line="35" selection-start-column="23" selection-end-line="35" selection-end-column="23" />
           <folding>
             <element signature="e#379#394#0" expanded="true" />
           </folding>
@@ -330,51 +356,39 @@
     <entry file="file://$PROJECT_DIR$/vlstools/reports.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="17408">
-          <caret line="1037" column="54" lean-forward="false" selection-start-line="1037" selection-start-column="54" selection-end-line="1037" selection-end-column="54" />
-          <folding>
-            <element signature="e#34#43#0" expanded="true" />
-          </folding>
+          <caret line="1037" column="54" selection-start-line="1037" selection-start-column="54" selection-end-line="1037" selection-end-column="54" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/vlstools/utils.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="2465">
-          <caret line="150" column="0" lean-forward="false" selection-start-line="150" selection-start-column="0" selection-end-line="150" selection-end-column="0" />
+          <caret line="150" selection-start-line="150" selection-end-line="150" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/vlstools/simanneal/anneal.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="357">
-          <caret line="29" column="7" lean-forward="false" selection-start-line="29" selection-start-column="7" selection-end-line="29" selection-end-column="7" />
+          <caret line="29" column="7" selection-start-line="29" selection-start-column="7" selection-end-line="29" selection-end-column="7" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/vlstools/alignments.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="9435">
-          <caret line="563" column="16" lean-forward="false" selection-start-line="563" selection-start-column="4" selection-end-line="563" selection-end-column="16" />
+          <caret line="563" column="16" selection-start-line="563" selection-start-column="4" selection-end-line="563" selection-end-column="16" />
           <folding>
             <element signature="e#35#44#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/README.md">
-      <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
-        <state split_layout="SPLIT">
-          <first_editor relative-caret-position="969">
-            <caret line="57" column="7" lean-forward="false" selection-start-line="57" selection-start-column="7" selection-end-line="57" selection-end-column="7" />
-          </first_editor>
-          <second_editor />
-        </state>
-      </provider>
-    </entry>
+    <entry file="file://$PROJECT_DIR$/README.md" />
     <entry file="file://$PROJECT_DIR$/vast.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="306">
-          <caret line="35" column="23" lean-forward="false" selection-start-line="35" selection-start-column="23" selection-end-line="35" selection-end-column="23" />
+          <caret line="35" column="23" selection-start-line="35" selection-start-column="23" selection-end-line="35" selection-end-column="23" />
           <folding>
             <element signature="e#379#394#0" expanded="true" />
           </folding>
@@ -384,51 +398,39 @@
     <entry file="file://$PROJECT_DIR$/vlstools/utils.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="2465">
-          <caret line="150" column="0" lean-forward="false" selection-start-line="150" selection-start-column="0" selection-end-line="150" selection-end-column="0" />
+          <caret line="150" selection-start-line="150" selection-end-line="150" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/vlstools/reports.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="17629">
-          <caret line="1037" column="54" lean-forward="false" selection-start-line="1037" selection-start-column="54" selection-end-line="1037" selection-end-column="54" />
-          <folding>
-            <element signature="e#34#43#0" expanded="true" />
-          </folding>
+          <caret line="1037" column="54" selection-start-line="1037" selection-start-column="54" selection-end-line="1037" selection-end-column="54" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/vlstools/simanneal/anneal.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="357">
-          <caret line="29" column="7" lean-forward="false" selection-start-line="29" selection-start-column="7" selection-end-line="29" selection-end-column="7" />
+          <caret line="29" column="7" selection-start-line="29" selection-start-column="7" selection-end-line="29" selection-end-column="7" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/vlstools/alignments.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="9435">
-          <caret line="563" column="16" lean-forward="false" selection-start-line="563" selection-start-column="4" selection-end-line="563" selection-end-column="16" />
+          <caret line="563" column="16" selection-start-line="563" selection-start-column="4" selection-end-line="563" selection-end-column="16" />
           <folding>
             <element signature="e#35#44#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/README.md">
-      <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
-        <state split_layout="SPLIT">
-          <first_editor relative-caret-position="969">
-            <caret line="57" column="7" lean-forward="false" selection-start-line="57" selection-start-column="7" selection-end-line="57" selection-end-column="7" />
-          </first_editor>
-          <second_editor />
-        </state>
-      </provider>
-    </entry>
+    <entry file="file://$PROJECT_DIR$/README.md" />
     <entry file="file://$PROJECT_DIR$/vast.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="306">
-          <caret line="35" column="23" lean-forward="false" selection-start-line="35" selection-start-column="23" selection-end-line="35" selection-end-column="23" />
+          <caret line="35" column="23" selection-start-line="35" selection-start-column="23" selection-end-line="35" selection-end-column="23" />
           <folding>
             <element signature="e#379#394#0" expanded="true" />
           </folding>
@@ -438,51 +440,39 @@
     <entry file="file://$PROJECT_DIR$/vlstools/reports.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="17408">
-          <caret line="1037" column="54" lean-forward="false" selection-start-line="1037" selection-start-column="54" selection-end-line="1037" selection-end-column="54" />
-          <folding>
-            <element signature="e#34#43#0" expanded="true" />
-          </folding>
+          <caret line="1037" column="54" selection-start-line="1037" selection-start-column="54" selection-end-line="1037" selection-end-column="54" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/vlstools/utils.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="2465">
-          <caret line="150" column="0" lean-forward="false" selection-start-line="150" selection-start-column="0" selection-end-line="150" selection-end-column="0" />
+          <caret line="150" selection-start-line="150" selection-end-line="150" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/vlstools/simanneal/anneal.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="357">
-          <caret line="29" column="7" lean-forward="false" selection-start-line="29" selection-start-column="7" selection-end-line="29" selection-end-column="7" />
+          <caret line="29" column="7" selection-start-line="29" selection-start-column="7" selection-end-line="29" selection-end-column="7" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/vlstools/alignments.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="9435">
-          <caret line="563" column="16" lean-forward="false" selection-start-line="563" selection-start-column="4" selection-end-line="563" selection-end-column="16" />
+          <caret line="563" column="16" selection-start-line="563" selection-start-column="4" selection-end-line="563" selection-end-column="16" />
           <folding>
             <element signature="e#35#44#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/README.md">
-      <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
-        <state split_layout="SPLIT">
-          <first_editor relative-caret-position="0">
-            <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          </first_editor>
-          <second_editor />
-        </state>
-      </provider>
-    </entry>
+    <entry file="file://$PROJECT_DIR$/README.md" />
     <entry file="file://$PROJECT_DIR$/vast.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="8347">
-          <caret line="508" column="22" lean-forward="false" selection-start-line="508" selection-start-column="22" selection-end-line="508" selection-end-column="22" />
+          <caret line="508" column="22" selection-start-line="508" selection-start-column="22" selection-end-line="508" selection-end-column="22" />
           <folding>
             <element signature="e#379#394#0" expanded="true" />
           </folding>
@@ -492,24 +482,21 @@
     <entry file="file://$PROJECT_DIR$/vlstools/reports.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="17408">
-          <caret line="1037" column="54" lean-forward="false" selection-start-line="1037" selection-start-column="54" selection-end-line="1037" selection-end-column="54" />
-          <folding>
-            <element signature="e#34#43#0" expanded="true" />
-          </folding>
+          <caret line="1037" column="54" selection-start-line="1037" selection-start-column="54" selection-end-line="1037" selection-end-column="54" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/vlstools/simanneal/anneal.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="357">
-          <caret line="29" column="7" lean-forward="false" selection-start-line="29" selection-start-column="7" selection-end-line="29" selection-end-column="7" />
+          <caret line="29" column="7" selection-start-line="29" selection-start-column="7" selection-end-line="29" selection-end-column="7" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/vlstools/alignments.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="9435">
-          <caret line="563" column="16" lean-forward="false" selection-start-line="563" selection-start-column="4" selection-end-line="563" selection-end-column="16" />
+          <caret line="563" column="16" selection-start-line="563" selection-start-column="4" selection-end-line="563" selection-end-column="16" />
           <folding>
             <element signature="e#35#44#0" expanded="true" />
           </folding>
@@ -519,14 +506,14 @@
     <entry file="file://$PROJECT_DIR$/vlstools/utils.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="2465">
-          <caret line="150" column="0" lean-forward="false" selection-start-line="150" selection-start-column="0" selection-end-line="150" selection-end-column="0" />
+          <caret line="150" selection-start-line="150" selection-end-line="150" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/vast.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="8347">
-          <caret line="508" column="22" lean-forward="false" selection-start-line="508" selection-start-column="22" selection-end-line="508" selection-end-column="22" />
+          <caret line="508" column="22" selection-start-line="508" selection-start-column="22" selection-end-line="508" selection-end-column="22" />
           <folding>
             <element signature="e#379#394#0" expanded="true" />
           </folding>
@@ -536,24 +523,21 @@
     <entry file="file://$PROJECT_DIR$/vlstools/reports.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="17629">
-          <caret line="1037" column="54" lean-forward="false" selection-start-line="1037" selection-start-column="54" selection-end-line="1037" selection-end-column="54" />
-          <folding>
-            <element signature="e#34#43#0" expanded="true" />
-          </folding>
+          <caret line="1037" column="54" selection-start-line="1037" selection-start-column="54" selection-end-line="1037" selection-end-column="54" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/vlstools/simanneal/anneal.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="357">
-          <caret line="29" column="7" lean-forward="false" selection-start-line="29" selection-start-column="7" selection-end-line="29" selection-end-column="7" />
+          <caret line="29" column="7" selection-start-line="29" selection-start-column="7" selection-end-line="29" selection-end-column="7" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/vlstools/alignments.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="9435">
-          <caret line="563" column="16" lean-forward="false" selection-start-line="563" selection-start-column="4" selection-end-line="563" selection-end-column="16" />
+          <caret line="563" column="16" selection-start-line="563" selection-start-column="4" selection-end-line="563" selection-end-column="16" />
           <folding>
             <element signature="e#35#44#0" expanded="true" />
           </folding>
@@ -563,24 +547,21 @@
     <entry file="file://$PROJECT_DIR$/vlstools/utils.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="2465">
-          <caret line="150" column="0" lean-forward="false" selection-start-line="150" selection-start-column="0" selection-end-line="150" selection-end-column="0" />
+          <caret line="150" selection-start-line="150" selection-end-line="150" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/vlstools/reports.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="663">
-          <caret line="52" column="81" lean-forward="false" selection-start-line="52" selection-start-column="80" selection-end-line="52" selection-end-column="81" />
-          <folding>
-            <element signature="e#34#43#0" expanded="true" />
-          </folding>
+          <caret line="52" column="81" selection-start-line="52" selection-start-column="80" selection-end-line="52" selection-end-column="81" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/vast.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="8347">
-          <caret line="508" column="22" lean-forward="false" selection-start-line="508" selection-start-column="22" selection-end-line="508" selection-end-column="22" />
+          <caret line="508" column="22" selection-start-line="508" selection-start-column="22" selection-end-line="508" selection-end-column="22" />
           <folding>
             <element signature="e#379#394#0" expanded="true" />
           </folding>
@@ -590,7 +571,7 @@
     <entry file="file://$PROJECT_DIR$/vlstools/utils.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="2465">
-          <caret line="150" column="0" lean-forward="true" selection-start-line="150" selection-start-column="0" selection-end-line="150" selection-end-column="0" />
+          <caret line="150" lean-forward="true" selection-start-line="150" selection-end-line="150" />
         </state>
       </provider>
     </entry>
@@ -604,17 +585,10 @@
     <entry file="file://$PROJECT_DIR$/vlstools/alignments.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="9435">
-          <caret line="563" column="16" lean-forward="false" selection-start-line="563" selection-start-column="4" selection-end-line="563" selection-end-column="16" />
+          <caret line="563" column="16" selection-start-line="563" selection-start-column="4" selection-end-line="563" selection-end-column="16" />
           <folding>
             <element signature="e#35#44#0" expanded="true" />
           </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/README.md">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
         </state>
       </provider>
     </entry>
@@ -624,78 +598,47 @@
     <entry file="file://$PROJECT_DIR$/vlstools/simanneal/anneal.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="357">
-          <caret line="29" column="7" lean-forward="false" selection-start-line="29" selection-start-column="7" selection-end-line="29" selection-end-column="7" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/images/alignments.png">
-      <provider selected="true" editor-type-id="images">
-        <state />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/sample_files/B31_amplicon_trimmed.fasta">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <caret line="29" column="7" selection-start-line="29" selection-start-column="7" selection-end-line="29" selection-end-column="7" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/README.md">
       <provider editor-type-id="text-editor">
         <state relative-caret-position="561">
-          <caret line="33" column="37" lean-forward="false" selection-start-line="33" selection-start-column="37" selection-end-line="33" selection-end-column="37" />
-        </state>
-      </provider>
-      <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
-        <state split_layout="SPLIT">
-          <first_editor relative-caret-position="17">
-            <caret line="6" column="0" lean-forward="false" selection-start-line="6" selection-start-column="0" selection-end-line="6" selection-end-column="90" />
-          </first_editor>
-          <second_editor />
+          <caret line="33" column="37" selection-start-line="33" selection-start-column="37" selection-end-line="33" selection-end-column="37" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/vlstools/utils.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="838">
-          <caret line="150" column="0" lean-forward="false" selection-start-line="150" selection-start-column="0" selection-end-line="150" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/vlstools/alignments.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="10829">
-          <caret line="645" column="4" lean-forward="false" selection-start-line="645" selection-start-column="4" selection-end-line="645" selection-end-column="4" />
-          <folding>
-            <element signature="e#35#44#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/sample_files/B31_cassettes_with_17bpDR.fasta">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/vlstools/reports.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="17">
-          <caret line="741" column="18" lean-forward="false" selection-start-line="741" selection-start-column="18" selection-end-line="741" selection-end-column="18" />
-          <folding>
-            <element signature="e#34#43#0" expanded="true" />
-          </folding>
+          <caret line="150" selection-start-line="150" selection-end-line="150" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/vast.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="476">
-          <caret line="28" column="39" lean-forward="true" selection-start-line="28" selection-start-column="39" selection-end-line="28" selection-end-column="39" />
+        <state relative-caret-position="17">
+          <caret line="28" column="29" selection-start-line="28" selection-start-column="29" selection-end-line="28" selection-end-column="29" />
           <folding>
             <element signature="e#379#394#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/vlstools/reports.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-1785">
+          <caret line="2369" column="17" selection-start-line="2369" selection-start-column="17" selection-end-line="2369" selection-end-column="17" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/vlstools/alignments.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="189">
+          <caret line="812" column="53" lean-forward="true" selection-start-line="812" selection-start-column="53" selection-end-line="812" selection-end-column="53" />
+          <folding>
+            <element signature="e#35#44#0" expanded="true" />
           </folding>
         </state>
       </provider>
