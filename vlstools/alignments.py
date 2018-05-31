@@ -855,3 +855,28 @@ def get_slips(read, slips, reference):
     best_slipset = results_per_aln[0][2]
     best_alignment = results_per_aln[0][1]
     return best_slipset, best_alignment
+
+
+def get_aa_frequencies(argtuple):
+    read, methods, coords, reference = argtuple
+    frequency = {method: np.zeros([len(coords)]) for method in methods}
+    for method in methods:
+        for aln in read.alns:
+            protein_alns = translate_mapping(mapping=trim_transform(aln.transform, len(reference.seq)),
+                                             reference=reference,
+                                             templ=("_all" in method or "_templated" in method),
+                                             nontempl=("_all" in method or "_nontemplated" in method),
+                                             correctframe=("corrected" in method),
+                                             filterframe=("inframe" in method),
+                                             filternonsense=("inframe" in method)
+                                             )
+            for protein_aln in protein_alns:
+                for op in protein_aln.transform:
+                    if op[1] == "S":
+                        frequency[method][op[0]] += 1 / len(read.alns) / len(protein_alns)
+                    if op[1] == "D":
+                        for x in range(op[2]):
+                            frequency[method][op[0] + x] += 1 / len(read.alns) / len(protein_alns)
+                    elif op[1] == "I":
+                        frequency[method][op[0]] += len(op[2]) / len(read.alns) / len(protein_alns)
+    return frequency

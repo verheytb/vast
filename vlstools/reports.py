@@ -2369,35 +2369,9 @@ def aa_positions(data, reportdir, database):
         counts = {method: np.zeros([len(coords)]) for method in methods}
         num_reads = len(read_subset)
 
-        def get_aa_frequencies(read):
-            frequency = {method: np.zeros([len(coords)]) for method in methods}
-            for method in methods:
-                for aln in read.alns:
-                    protein_alns = al.translate_mapping(mapping=al.trim_transform(aln.transform,
-                                                                                  len(reference.seq)),
-                                                        reference=reference,
-                                                        templ=("_all" in method or
-                                                               "_templated" in method),
-                                                        nontempl=("_all" in method or
-                                                                  "_nontemplated" in method),
-                                                        correctframe=("corrected" in method),
-                                                        filterframe=("inframe" in method),
-                                                        filternonsense=("inframe" in method)
-                                                        )
-                    for protein_aln in protein_alns:
-                        for op in protein_aln.transform:
-                            if op[1] == "S":
-                                frequency[method][op[0]] += 1 / len(read.alns) / len(protein_alns)
-                            if op[1] == "D":
-                                for x in range(op[2]):
-                                    frequency[method][op[0] + x] += 1 / len(read.alns) / len(protein_alns)
-                            elif op[1] == "I":
-                                frequency[method][op[0]] += len(op[2]) / len(read.alns) / len(protein_alns)
-            return frequency
-
         P = multiprocessing.Pool(multiprocessing.cpu_count())
-
-        for x, results in enumerate(P.imap_unordered(get_aa_frequencies, read_subset)):
+        arg_generator = ((read, methods, coords, reference) for read in read_subset)
+        for x, results in enumerate(P.imap_unordered(al.get_aa_frequencies, arg_generator)):
             for method, vector in results.items():
                 counts[method] += vector
             ut.tprint("Computing protein alignments: %d of %d reads completed." % (x, num_reads), ontop=False)
