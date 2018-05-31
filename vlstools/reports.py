@@ -2371,7 +2371,7 @@ def aa_positions(data, reportdir, database):
 
         P = multiprocessing.Pool(multiprocessing.cpu_count())
         arg_generator = ((read, methods, coords, reference) for read in read_subset)
-        for x, results in enumerate(P.imap_unordered(al.get_aa_frequencies, arg_generator)):
+        for x, results in enumerate(P.imap_unordered(al.get_aa_frequencies, arg_generator), 1):
             for method, vector in results.items():
                 counts[method] += vector
             ut.tprint("Computing protein alignments: %d of %d reads completed." % (x, num_reads), ontop=True)
