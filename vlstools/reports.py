@@ -2437,7 +2437,7 @@ def aa_positions(data, reportdir, database):
                 d2b_writer = csv.writer(d2bhandle, delimiter=" ")
                 for coord in range(coords[0]):  # prefix with zeros to overwrite b-factors in pdb
                     d2b_writer.writerow([coord, 0])
-                for coord, one_letter, freq in zip(coords, reference.protein, aa_freq[method]):
+                for coord, one_letter, freq in zip(coords, reference.protein, counts[method]/num_reads):
                     d2b_writer.writerow([coord, freq])
                 for coord in range(coords[-1] + 1, 10000):  # suffix with zeros to overwrite b-factors in pdb
                     d2b_writer.writerow([coord, 0])
