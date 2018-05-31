@@ -2407,7 +2407,7 @@ def aa_positions(data, reportdir, database):
             tsv_writer.writerow(["Amino Acid:"] + list(reference.protein))
             for method in methods:
                 tsv_writer.writerow(["Frequency of variant amino acid (Method: %s)" % method]
-                                    + counts[method]/num_reads)
+                                    + list(counts[method]/num_reads))
 
             # Part 2: theoretical frequencies
             tsv_writer.writerow([])
@@ -2428,7 +2428,7 @@ def aa_positions(data, reportdir, database):
             tsv_writer.writerow(["Amino Acid:"] + list(reference.protein))
             for method in methods:
                 tsv_writer.writerow(["Counts of variant amino acid (Method: %s)" % method]
-                                    + counts[method])
+                                    + list(counts[method]))
 
         # write files that can be used by data2bfactor.py to colour 3D structures
         for method in methods:
