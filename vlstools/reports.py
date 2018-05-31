@@ -7,10 +7,10 @@ import math
 import string
 import random
 import shutil
-import gc
+import multiprocessing
 from itertools import product, combinations, chain
 from functools import reduce, partial
-from operator import mul
+from operator import mul, add
 
 # dependencies
 import numpy as np
@@ -2366,13 +2366,12 @@ def aa_positions(data, reportdir, database):
                             (reference.offset + len(reference.seq)) // 3 + 1))  # end at last full amino acid
 
         # compute frequency and read counts
-        aa_freq = {method: ([0] * len(coords)) for method in methods}
-        counts = {method: ([0] * len(coords)) for method in methods}
-        num_methods = len(methods)
+        counts = {method: np.zeros([len(coords)]) for method in methods}
         num_reads = len(read_subset)
-        for x_m, method in enumerate(methods):
-            for x_r, read in enumerate(read_subset):
-                reference = references[refid]
+
+        def get_aa_frequencies(read):
+            frequency = {method: np.zeros([len(coords)]) for method in methods}
+            for method in methods:
                 for aln in read.alns:
                     protein_alns = al.translate_mapping(mapping=al.trim_transform(aln.transform,
                                                                                   len(reference.seq)),
@@ -2388,16 +2387,21 @@ def aa_positions(data, reportdir, database):
                     for protein_aln in protein_alns:
                         for op in protein_aln.transform:
                             if op[1] == "S":
-                                aa_freq[method][op[0]] += 1 / len(read_subset) / len(read.alns) / len(protein_alns)
-                                counts[method][op[0]] += 1 / len(read.alns) / len(protein_alns)
+                                frequency[method][op[0]] += 1 / len(read.alns) / len(protein_alns)
                             if op[1] == "D":
                                 for x in range(op[2]):
-                                    aa_freq[method][op[0] + x] += 1 / len(read_subset) / len(read.alns) / len(protein_alns)
-                                    counts[method][op[0] + x] += 1 / len(read.alns) / len(protein_alns)
+                                    frequency[method][op[0] + x] += 1 / len(read.alns) / len(protein_alns)
                             elif op[1] == "I":
-                                aa_freq[method][op[0]] += len(op[2]) / len(read_subset) / len(read.alns) / len(protein_alns)
-                                counts[method][op[0]] += len(op[2]) / len(read.alns) / len(protein_alns)
-                ut.tprint("%d of %d methods, %d of %d reads" % (x_m, num_methods, x_r, num_reads), ontop=True)
+                                frequency[method][op[0]] += len(op[2]) / len(read.alns) / len(protein_alns)
+            return frequency
+
+        P = multiprocessing.Pool(multiprocessing.cpu_count())
+
+        for x, results in enumerate(P.imap_unordered(get_aa_frequencies, read_subset)):
+            for method, vector in results.items():
+                counts[method] += vector
+            ut.tprint("Computing protein alignments: %d of %d reads completed." % (x, num_reads), ontop=False)
+
         # compute theoretical frequencies
         reference_aa_freq_by_method = {}
         for method in refmethods:
@@ -2428,7 +2432,7 @@ def aa_positions(data, reportdir, database):
             tsv_writer.writerow(["Amino Acid:"] + list(reference.protein))
             for method in methods:
                 tsv_writer.writerow(["Frequency of variant amino acid (Method: %s)" % method]
-                                    + aa_freq[method])
+                                    + counts[method]/num_reads)
 
             # Part 2: theoretical frequencies
             tsv_writer.writerow([])
