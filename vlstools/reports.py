@@ -2374,7 +2374,8 @@ def aa_positions(data, reportdir, database):
         for x, results in enumerate(P.imap_unordered(al.get_aa_frequencies, arg_generator)):
             for method, vector in results.items():
                 counts[method] += vector
-            ut.tprint("Computing protein alignments: %d of %d reads completed." % (x, num_reads), ontop=False)
+            ut.tprint("Computing protein alignments: %d of %d reads completed." % (x, num_reads), ontop=True)
+        print()  # newline
 
         # compute theoretical frequencies
         reference_aa_freq_by_method = {}
