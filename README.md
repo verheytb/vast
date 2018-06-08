@@ -1,3 +1,5 @@
+[![DOI](https://zenodo.org/badge/DOI/10.1016/j.celrep.2018.04.117.svg)](https://doi.org/10.1016/j.celrep.2018.04.117)
+
 # VAST: Variable Antigen Switching Tracer
 **VAST** is for analyzing sequenced variants of the *vlsE* gene found in *Borrelia* species, as well as similar antigenic variation systems in other pathogens.
 
