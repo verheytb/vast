@@ -36,6 +36,9 @@ math.exp = ut.quiet_exp  # overwrite the exponential function to prevent overflo
 # Decrease font size to prevent clashing in larger plots.
 rcParams['pdf.fonttype'] = 42
 
+# Switch backend for non-interactive environments
+plt.switch_backend('agg')
+
 
 def simple_functions(metric, data, reportdir, database, count_indels_once=False, min_switch_size=1):
     references = database.get("references")
@@ -3102,21 +3105,24 @@ def switching_and_nontemplated(data, reportdir, database, bootstrap=100, changet
                         # Left Boundary Uncertainty Region
                         nontemplated_snps = len([op for op in nontemplated_tf if ev["left"] <= op[0] < ev["start"]])
                         length = ev["start"] - ev["left"]
-                        frequency = nontemplated_snps/length
-                        results["left_boundaries"][num_switches][0].append(frequency)
-                        results["left_boundaries"][num_switches][1].append(weight)
+                        if length > 0:
+                            frequency = nontemplated_snps/length
+                            results["left_boundaries"][num_switches][0].append(frequency)
+                            results["left_boundaries"][num_switches][1].append(weight)
                         # Right Boundary Uncertainty Region
                         nontemplated_snps = len([op for op in nontemplated_tf if ev["stop"] < op[0] <= ev["right"]])
                         length = ev["right"] - ev["stop"]
-                        frequency = nontemplated_snps / length
-                        results["right_boundaries"][num_switches][0].append(frequency)
-                        results["right_boundaries"][num_switches][1].append(weight)
+                        if length > 0:
+                            frequency = nontemplated_snps / length
+                            results["right_boundaries"][num_switches][0].append(frequency)
+                            results["right_boundaries"][num_switches][1].append(weight)
                         # Interior and boundaries
                         nontemplated_snps = len([op for op in nontemplated_tf if ev["left"] <= op[0] <= ev["right"]])
                         length = ev["right"] - ev["left"] + 1
-                        frequency = nontemplated_snps / length
-                        results["interior_and_boundaries"][num_switches][0].append(frequency)
-                        results["interior_and_boundaries"][num_switches][1].append(weight)
+                        if length > 0:
+                            frequency = nontemplated_snps / length
+                            results["interior_and_boundaries"][num_switches][0].append(frequency)
+                            results["interior_and_boundaries"][num_switches][1].append(weight)
 
                         # Exterior (between switches only)
                         if x > 0:
@@ -3125,28 +3131,31 @@ def switching_and_nontemplated(data, reportdir, database, bootstrap=100, changet
                                 nontemplated_snps = len([op for op in nontemplated_tf
                                                          if last_ev["left"] < op[0] < ev["right"]])
                                 length = ev["right"] - last_ev["left"] - 1
-                                frequency = nontemplated_snps / length
-                                results["exterior"][num_switches][0].append(frequency)
-                                results["exterior"][num_switches][1].append(weight)
+                                if length > 0:
+                                    frequency = nontemplated_snps / length
+                                    results["exterior"][num_switches][0].append(frequency)
+                                    results["exterior"][num_switches][1].append(weight)
                         # First switch: do leftmost exterior region
                         if x == 0:
                             nontemplated_snps = len([op for op in nontemplated_tf if 0 <= op[0] < ev["left"]])
                             length = ev["left"]
-                            frequency = nontemplated_snps / length
-                            results["leftmost_exterior"][num_switches][0].append(frequency)
-                            results["leftmost_exterior"][num_switches][1].append(weight)
-                            results["exterior"][num_switches][0].append(frequency)
-                            results["exterior"][num_switches][1].append(weight)
+                            if length > 0:
+                                frequency = nontemplated_snps / length
+                                results["leftmost_exterior"][num_switches][0].append(frequency)
+                                results["leftmost_exterior"][num_switches][1].append(weight)
+                                results["exterior"][num_switches][0].append(frequency)
+                                results["exterior"][num_switches][1].append(weight)
                         # Last switch: do rightmost_exterior region
                         if x == len(sampled_switches) - 1:
                             nontemplated_snps = len([op for op in nontemplated_tf
                                                      if ev["right"] < op[0] <= len(reference.seq)])
                             length = len(reference.seq) - ev["right"]
-                            frequency = nontemplated_snps / length
-                            results["rightmost_exterior"][num_switches][0].append(frequency)
-                            results["rightmost_exterior"][num_switches][1].append(weight)
-                            results["exterior"][num_switches][0].append(frequency)
-                            results["exterior"][num_switches][1].append(weight)
+                            if length > 0:
+                                frequency = nontemplated_snps / length
+                                results["rightmost_exterior"][num_switches][0].append(frequency)
+                                results["rightmost_exterior"][num_switches][1].append(weight)
+                                results["exterior"][num_switches][0].append(frequency)
+                                results["exterior"][num_switches][1].append(weight)
 
             # calculate stats for bootstrapping results
             for result_type, by_num_switches in results.items():
