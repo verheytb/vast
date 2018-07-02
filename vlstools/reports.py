@@ -3039,6 +3039,13 @@ def switching_and_nontemplated(data, reportdir, database, bootstrap=100, changet
 
         for i in range(bootstrap):
             ut.tprint("Bootstrapping %d of %d" % (i + 1, bootstrap), ontop=True)
+            with open(base_report_path + ".boundary_changes.bootstrap%04d.tsv" % i, 'w') as handle:
+                event_writer = csv.writer(handle, delimiter="\t")
+                event_writer.writerow(
+                    ["Read", "Alignment", "Number of Alignments", "Number of switches on Read", "Switch Start",
+                     "Switch End", "Boundary", "Sequence", "Post-mutation Sequence"])
+
+
             # count non-templated SNPs by number of switches and location relative to switch.
             results = {result: tuple(([], []) for _ in range(max_switches + 1)) for result in result_types}
 
@@ -3047,7 +3054,7 @@ def switching_and_nontemplated(data, reportdir, database, bootstrap=100, changet
                     # check if all alignments give the same templated alignment
                     if not len({al.templated(aln.transform, reference) for aln in read.alns}) == 1:
                         continue
-                for aln in read.alns:
+                for aln_number, aln in enumerate(read.alns, 1):
                     templated_tf = al.templated(aln.transform, reference)
                     nontemplated_tf = al.nontemplated(aln.transform, reference)
                     # filter nontemplated_tf for optypes as specified in parameters
@@ -3060,6 +3067,8 @@ def switching_and_nontemplated(data, reportdir, database, bootstrap=100, changet
                     switch_set = random.choice(switch_sets)
                     num_switches = len(switch_set)
                     weight = 1 / len(read.alns)
+
+                    # filter out reads with overlapping switches
                     if nonoverlapping_switches_only:
                         continue_flag = False
                         for x, (start_idx, stop_idx, sources) in enumerate(switch_set[:-1]):
@@ -3093,6 +3102,8 @@ def switching_and_nontemplated(data, reportdir, database, bootstrap=100, changet
                         frequency = nontemplated_snps / length
                         results["exterior"][0][0].append(frequency)
                         results["exterior"][0][1].append(weight)
+                        event_writer.writerow([read.name, aln_number, len(read.alns), num_switches, "", "", "",
+                                               reference.seq, read.seq])
                     # reads with switches
                     for x, ev in enumerate(sampled_switches):
                         # Interior
@@ -3102,6 +3113,10 @@ def switching_and_nontemplated(data, reportdir, database, bootstrap=100, changet
                             frequency = nontemplated_snps / length
                             results["interior"][num_switches][0].append(frequency)
                             results["interior"][num_switches][1].append(weight)
+                            event_writer.writerow([read.name, aln_number, len(read.alns), num_switches, ev["start"],
+                                                   ev["stop"], "Interior", reference.seq[ev["start"]:ev["stop"]+1],
+                                                   al.transform(reference=reference, mapping=nontemplated_tf,
+                                                                start=ev["start"], stop=ev["stop"]+1)])
                         # Left Boundary Uncertainty Region
                         nontemplated_snps = len([op for op in nontemplated_tf if ev["left"] <= op[0] < ev["start"]])
                         length = ev["start"] - ev["left"]
@@ -3109,6 +3124,10 @@ def switching_and_nontemplated(data, reportdir, database, bootstrap=100, changet
                             frequency = nontemplated_snps/length
                             results["left_boundaries"][num_switches][0].append(frequency)
                             results["left_boundaries"][num_switches][1].append(weight)
+                            event_writer.writerow([read.name, aln_number, len(read.alns), num_switches, ev["start"],
+                                                   ev["stop"], "Left BUR", reference.seq[ev["start"]:ev["stop"] + 1],
+                                                   al.transform(reference=reference, mapping=nontemplated_tf,
+                                                                start=ev["start"], stop=ev["stop"] + 1)])
                         # Right Boundary Uncertainty Region
                         nontemplated_snps = len([op for op in nontemplated_tf if ev["stop"] < op[0] <= ev["right"]])
                         length = ev["right"] - ev["stop"]
@@ -3116,6 +3135,10 @@ def switching_and_nontemplated(data, reportdir, database, bootstrap=100, changet
                             frequency = nontemplated_snps / length
                             results["right_boundaries"][num_switches][0].append(frequency)
                             results["right_boundaries"][num_switches][1].append(weight)
+                            event_writer.writerow([read.name, aln_number, len(read.alns), num_switches, ev["start"],
+                                                   ev["stop"], "Right BUR", reference.seq[ev["start"]:ev["stop"] + 1],
+                                                   al.transform(reference=reference, mapping=nontemplated_tf,
+                                                                start=ev["start"], stop=ev["stop"] + 1)])
                         # Interior and boundaries
                         nontemplated_snps = len([op for op in nontemplated_tf if ev["left"] <= op[0] <= ev["right"]])
                         length = ev["right"] - ev["left"] + 1
@@ -3135,6 +3158,11 @@ def switching_and_nontemplated(data, reportdir, database, bootstrap=100, changet
                                     frequency = nontemplated_snps / length
                                     results["exterior"][num_switches][0].append(frequency)
                                     results["exterior"][num_switches][1].append(weight)
+                                    event_writer.writerow(
+                                        [read.name, aln_number, len(read.alns), num_switches, ev["start"],
+                                         ev["stop"], "Exterior", reference.seq[ev["start"]:ev["stop"] + 1],
+                                         al.transform(reference=reference, mapping=nontemplated_tf,
+                                                      start=ev["start"], stop=ev["stop"] + 1)])
                         # First switch: do leftmost exterior region
                         if x == 0:
                             nontemplated_snps = len([op for op in nontemplated_tf if 0 <= op[0] < ev["left"]])
@@ -3145,6 +3173,11 @@ def switching_and_nontemplated(data, reportdir, database, bootstrap=100, changet
                                 results["leftmost_exterior"][num_switches][1].append(weight)
                                 results["exterior"][num_switches][0].append(frequency)
                                 results["exterior"][num_switches][1].append(weight)
+                                event_writer.writerow([read.name, aln_number, len(read.alns), num_switches, ev["start"],
+                                                       ev["stop"], "Exterior",
+                                                       reference.seq[ev["start"]:ev["stop"] + 1],
+                                                       al.transform(reference=reference, mapping=nontemplated_tf,
+                                                                    start=ev["start"], stop=ev["stop"] + 1)])
                         # Last switch: do rightmost_exterior region
                         if x == len(sampled_switches) - 1:
                             nontemplated_snps = len([op for op in nontemplated_tf
@@ -3156,6 +3189,11 @@ def switching_and_nontemplated(data, reportdir, database, bootstrap=100, changet
                                 results["rightmost_exterior"][num_switches][1].append(weight)
                                 results["exterior"][num_switches][0].append(frequency)
                                 results["exterior"][num_switches][1].append(weight)
+                                event_writer.writerow([read.name, aln_number, len(read.alns), num_switches, ev["start"],
+                                                       ev["stop"], "Exterior",
+                                                       reference.seq[ev["start"]:ev["stop"] + 1],
+                                                       al.transform(reference=reference, mapping=nontemplated_tf,
+                                                                    start=ev["start"], stop=ev["stop"] + 1)])
 
             # calculate stats for bootstrapping results
             for result_type, by_num_switches in results.items():
@@ -3206,14 +3244,6 @@ def switching_and_nontemplated(data, reportdir, database, bootstrap=100, changet
                 else:
                     row.extend([None, None, None])
             tsv_writer.writerow(row)
-
-
-
-
-        with open(base_report_path + ".boundary_changes.tsv", 'w') as handle:
-            tsv_writer = csv.writer(handle, delimiter="\t")
-            tsv_writer.writerow(["Read", "Alignment", "Number of Alignments", "Switch Set", "Number of Switch Sets",
-                                 "Switch Start", "Switch End", "Boundary", "Sequence", "Post-mutation Sequence"])
 
 
 def switching_and_slippage(data, reportdir, database, bootstrap=100, minimum_switch_length=0,

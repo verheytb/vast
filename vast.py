@@ -112,78 +112,84 @@ if __name__ == "__main__":
                     "biologically meaningful measurements from that data.")
     subparsers = parser.add_subparsers(title="Commands", help="Command Help", dest="subcommand")
     # loads a previously created database
-    load_subparser = subparsers.add_parser("load", help="Load a database")
-    load_subparser.add_argument("dbdir")
+    load = subparsers.add_parser("load", help="Load a database")
+    load.add_argument("dbdir")
     # creates a new database
-    new_subparser = subparsers.add_parser("new", help="Create a new database")
-    new_subparser.add_argument("-f", "--force", action="store_true",
-                               help="Force overwriting an existing database with a new one.")
-    new_subparser.add_argument("dbdir", help="A database filename to store all generated and imported data.")
+    new = subparsers.add_parser("new", help="Create a new database")
+    new.add_argument("-f", "--force", action="store_true",
+                     help="Force overwriting an existing database with a new one.")
+    new.add_argument("dbdir", help="A database filename to store all generated and imported data.")
 
     # add reads to database from a list of tabular list of fasta files
-    add_reads_subparser = subparsers.add_parser("add_reads", help="Add a set of sample reads and the corresponding "
-                                                                  "reference and cassette sequences for analysis.")
-    add_reads_subparser.add_argument("csv_file", type=str,
-                                     help="A csv file with a header row and the following columns: "
-                                          "1. Sample FASTA/Q filename 2. Reference name 3+. Sample Tags (eg. Strain, "
-                                          "Time Point, Conditions). Note that the reference name and the cassettes "
-                                          "name must refer to sequences already entered in the database.")
-    add_reads_subparser.add_argument("-r", "--replace", action="store_true",
-                                     help="For reads already in the database, tags will be entirely replaced to "
-                                          "reflect those being imported. Overrides --force and --merge.")
-    add_reads_subparser.add_argument("-f", "--force", action="store_true",
-                                     help="Overwrites tags for reads already in the database. Combine with --merge to "
-                                          "retain tags not present in the reads being imported.")
-    add_reads_subparser.add_argument("-m", "--merge", action="store_true",
-                                      help="If the reads being imported already exist in the database, any new tags will"
-                                           " be added, but not overwritten unless --force is also specified.")
+    addreads = subparsers.add_parser("add_reads", help="Add a set of sample reads and the corresponding "
+                                                       "reference and cassette sequences for analysis.")
+    addreads.add_argument("csv_file", type=str,
+                          help="A csv file with a header row and the following columns: 1. Sample FASTA/Q filename 2. "
+                               "Reference name 3+. Sample Tags (eg. Strain, Time Point, Conditions). Note that the "
+                               "reference name and the cassettes name must refer to sequences already entered in the "
+                               "database.")
+    addreads.add_argument("-r", "--replace", action="store_true",
+                          help="For reads already in the database, tags will be entirely replaced to reflect those "
+                               "being imported. Overrides --force and --merge.")
+    addreads.add_argument("-f", "--force", action="store_true",
+                          help="Overwrites tags for reads already in the database. Combine with --merge to retain tags "
+                               "not present in the reads being imported.")
+    addreads.add_argument("-m", "--merge", action="store_true",
+                          help="If the reads being imported already exist in the database, any new tags will be added, "
+                               "but not overwritten unless --force is also specified.")
 
     # add a vlsE reference and associated vls cassettes to the database from a fasta file
-    add_reference_subparser = subparsers.add_parser("add_reference", help="Add a reference file to the database.")
-    add_reference_subparser.add_argument("name", type=str, help="A name for the reference file (avoid all whitespace "
+    addref = subparsers.add_parser("add_reference", help="Add a reference file to the database.")
+    addref.add_argument("name", type=str, help="A name for the reference file (avoid all whitespace "
                                                                 "characters).")
-    add_reference_subparser.add_argument("reference_fasta", type=str,
-                                         help="A FASTA file with a single reference sequence.")
-    add_reference_subparser.add_argument("offset", type=int, help="The 0-based starting position of the reference "
-                                                                  "sequence relative to the start of the gene.")
-    add_reference_subparser.add_argument("-c", "--cassettes", metavar="cassettes_fasta", type=str,
-                                         default=None, help="A FASTA file with the cassette sequences.")
+    addref.add_argument("reference_fasta", type=str,
+                        help="A FASTA file with a single reference sequence.")
+    addref.add_argument("offset", type=int, help="The 0-based starting position of the reference "
+                                                 "sequence relative to the start of the gene.")
+    addref.add_argument("-c", "--cassettes", metavar="cassettes_fasta", type=str,
+                        default=None, help="A FASTA file with the cassette sequences.")
+
+    # edit reads in the database
+    remove = subparsers.add_parser("remove", help="Manually remove reads in the database.")
+    remove.add_argument("name")
+    remove.add_argument("-v", "--verbose", action="store_true",
+                        help="Display more granular information.")
 
     # add the positions of the traditionally defined variable regions to a reference.
-    add_vr_subparser = subparsers.add_parser("annotate_vr",
-                                             help="Annotate a reference with the positions of variable regions.")
-    add_vr_subparser.add_argument("refid", type=str, help="The name of a reference already in the database.")
-    add_vr_subparser.add_argument("-r", "--relative", action="store_true",
-                                  help="When specified, coordinates are relative to reference, not vlsE gene.")
-    add_vr_subparser.add_argument("-f", "--force", action="store_true",
-                                  help="Overwrite variable region annotations already in the database.")
-    add_vr_subparser.add_argument("positions", metavar="x", nargs="+", type=int,
-                                  help="a list of start and stop coordinates (eg., for two regions: 17 29 35 63). Each "
-                                       "pair is [start, stop) in 0-based coordinates and is relative to the start of "
-                                       "the gene (not the reference sequence).")
+    addvr = subparsers.add_parser("annotate_vr",
+                                  help="Annotate a reference with the positions of variable regions.")
+    addvr.add_argument("refid", type=str, help="The name of a reference already in the database.")
+    addvr.add_argument("-r", "--relative", action="store_true",
+                       help="When specified, coordinates are relative to reference, not vlsE gene.")
+    addvr.add_argument("-f", "--force", action="store_true",
+                       help="Overwrite variable region annotations already in the database.")
+    addvr.add_argument("positions", metavar="x", nargs="+", type=int,
+                       help="a list of start and stop coordinates (eg., for two regions: 17 29 35 63). Each pair is "
+                            "[start, stop) in 0-based coordinates and is relative to the start of the gene (not the "
+                            "reference sequence).")
 
     # align cassettes from scratch or input pre-aligned cassettes
-    align_cassettes_subparser = subparsers.add_parser("align_cassettes",
-                                                      help="Make the multiple alignment of the cassettes for each set "
-                                                           "of cassettes provided with \"vast add_reference\".")
-    align_cassettes_subparser.add_argument("-p", "--prealigned", metavar="pyc_file", type=str,
-                                           help="A .pyc file representing previously computed multiple alignment.")
-    align_cassettes_subparser.add_argument("-f", "--force", action="store_true",
-                                           help="Force recomputing alignments already in the database.")
+    aligncassettes = subparsers.add_parser("align_cassettes",
+                                           help="Make the multiple alignment of the cassettes for each set "
+                                                "of cassettes provided with \"vast add_reference\".")
+    aligncassettes.add_argument("-p", "--prealigned", metavar="pyc_file", type=str,
+                                help="A .pyc file representing previously computed multiple alignment.")
+    aligncassettes.add_argument("-f", "--force", action="store_true",
+                                help="Force recomputing alignments already in the database.")
 
     # display stats about the db
-    dbstats_subparser = subparsers.add_parser("dbstats",
-                                              help="Display information about the contents of the database.")
-    dbstats_subparser.add_argument("--references", "-r", action="store_true",
-                                   help="Display information about the reference and cassette sequences in the "
+    dbstats = subparsers.add_parser("dbstats",
+                                    help="Display information about the contents of the database.")
+    dbstats.add_argument("--references", "-r", action="store_true",
+                         help="Display information about the reference and cassette sequences in the "
                                         "database.")
-    dbstats_subparser.add_argument("--ontology", "-o", action="store_true",
-                                   help="Display the ontology for reads in the database.")
+    dbstats.add_argument("--ontology", "-o", action="store_true",
+                         help="Display the ontology for reads in the database.")
 
     # export data in the database to human-readable and other formats
-    export_subparser = subparsers.add_parser("export_references",
-                                             help="Export references in the database as fasta files (for the sequence) "
-                                                  "and bam files (for the aligned cassette sequences).")
+    export = subparsers.add_parser("export_references",
+                                   help="Export references in the database as fasta files (for the sequence) and bam "
+                                        "files (for the aligned cassette sequences).")
 
     # map variants
     map_variants_subparser = subparsers.add_parser("map",
@@ -463,6 +469,19 @@ if __name__ == "__main__":
                 tagsets[tagset] += 1
             for x, (tagset, count) in enumerate(tagsets.items(), start=1):
                 print("Ontology %d (%d reads): %s" % (x, count, str(tagset)))
+
+    elif args.subcommand == "remove":
+        db = Database()
+        reads = db.get_and_check_reads()
+        indices = {x for x, read in enumerate(reads) if read.name == args.name}
+        utl.tprint("Deleting %d reads with the name \"%s\"." % (len(indices), args.name))
+        if args.verbose:
+            for index in indices:
+                print(repr(reads[index]))
+        for index in indices:
+            reads = [read for read in reads if read.name != args.name]
+        db.save(reads, "reads")
+
 
     elif args.subcommand == "export_references":
         db = Database()
