@@ -3046,154 +3046,155 @@ def switching_and_nontemplated(data, reportdir, database, bootstrap=100, changet
                      "Switch End", "Boundary", "Sequence", "Post-mutation Sequence"])
 
 
-            # count non-templated SNPs by number of switches and location relative to switch.
-            results = {result: tuple(([], []) for _ in range(max_switches + 1)) for result in result_types}
+                # count non-templated SNPs by number of switches and location relative to switch.
+                results = {result: tuple(([], []) for _ in range(max_switches + 1)) for result in result_types}
 
-            for read in read_subset:
-                if unambiguous_switches_only:
-                    # check if all alignments give the same templated alignment
-                    if not len({al.templated(aln.transform, reference) for aln in read.alns}) == 1:
-                        continue
-                for aln_number, aln in enumerate(read.alns, 1):
-                    templated_tf = al.templated(aln.transform, reference)
-                    nontemplated_tf = al.nontemplated(aln.transform, reference)
-                    # filter nontemplated_tf for optypes as specified in parameters
-                    nontemplated_tf = tuple(op for op in nontemplated_tf if op[1] in changetypes)
-                    switch_sets = switches[(templated_tf, reference.name)]
-                    if isinstance(switch_sets, int):
-                        continue
-                    if unambiguous_switches_only and len(switch_sets) > 1:
-                        continue
-                    switch_set = random.choice(switch_sets)
-                    num_switches = len(switch_set)
-                    weight = 1 / len(read.alns)
-
-                    # filter out reads with overlapping switches
-                    if nonoverlapping_switches_only:
-                        continue_flag = False
-                        for x, (start_idx, stop_idx, sources) in enumerate(switch_set[:-1]):
-                            stop_op = templated_tf[stop_idx - 1]
-                            max_right_pos = max([burs.right[source][stop_op] for source in sources])
-                            next_start_idx, next_stop_idx, next_sources = switch_set[x+1]
-                            next_start_op = templated_tf[next_start_idx]
-                            max_left_pos = min([burs.left[source][next_start_op] for source in next_sources])
-                            if not max_right_pos < max_left_pos:
-                                continue_flag = True
-                        if continue_flag:
+                for read in read_subset:
+                    if unambiguous_switches_only:
+                        # check if all alignments give the same templated alignment
+                        if not len({al.templated(aln.transform, reference) for aln in read.alns}) == 1:
                             continue
+                    for aln_number, aln in enumerate(read.alns, 1):
+                        templated_tf = al.templated(aln.transform, reference)
+                        nontemplated_tf = al.nontemplated(aln.transform, reference)
+                        # filter nontemplated_tf for optypes as specified in parameters
+                        nontemplated_tf = tuple(op for op in nontemplated_tf if op[1] in changetypes)
+                        switch_sets = switches[(templated_tf, reference.name)]
+                        if isinstance(switch_sets, int):
+                            continue
+                        if unambiguous_switches_only and len(switch_sets) > 1:
+                            continue
+                        switch_set = random.choice(switch_sets)
+                        num_switches = len(switch_set)
+                        weight = 1 / len(read.alns)
 
-                    sampled_switches = []
-                    for start_idx, stop_idx, sources in switch_set:
-                        ev = {}
-                        source = random.sample(sources, 1)[0]
-                        start_op = templated_tf[start_idx]
-                        stop_op = templated_tf[stop_idx - 1]
-                        ev["start"] = start_op[0]
-                        ev["stop"] = stop_op[0]
-                        ev["left"] = burs.left[source][start_op]
-                        ev["right"] = burs.right[source][stop_op]
-                        sampled_switches.append(ev)
-                    if not all(ev["stop"] - ev["start"] >= minimum_switch_length for ev in sampled_switches):
-                        continue
-                    # reads with no switches
-                    if num_switches == 0:
-                        nontemplated_snps = len(nontemplated_tf)
-                        length = len(reference.seq)
-                        frequency = nontemplated_snps / length
-                        results["exterior"][0][0].append(frequency)
-                        results["exterior"][0][1].append(weight)
-                        event_writer.writerow([read.name, aln_number, len(read.alns), num_switches, "", "", "",
-                                               reference.seq, read.seq])
-                    # reads with switches
-                    for x, ev in enumerate(sampled_switches):
-                        # Interior
-                        nontemplated_snps = len([op for op in nontemplated_tf if ev["start"] <= op[0] <= ev["stop"]])
-                        length = ev["stop"] - ev["start"] + 1
-                        if length > 0:
-                            frequency = nontemplated_snps / length
-                            results["interior"][num_switches][0].append(frequency)
-                            results["interior"][num_switches][1].append(weight)
-                            event_writer.writerow([read.name, aln_number, len(read.alns), num_switches, ev["start"],
-                                                   ev["stop"], "Interior", reference.seq[ev["start"]:ev["stop"]+1],
-                                                   al.transform(reference=reference, mapping=nontemplated_tf,
-                                                                start=ev["start"], stop=ev["stop"]+1)])
-                        # Left Boundary Uncertainty Region
-                        nontemplated_snps = len([op for op in nontemplated_tf if ev["left"] <= op[0] < ev["start"]])
-                        length = ev["start"] - ev["left"]
-                        if length > 0:
-                            frequency = nontemplated_snps/length
-                            results["left_boundaries"][num_switches][0].append(frequency)
-                            results["left_boundaries"][num_switches][1].append(weight)
-                            event_writer.writerow([read.name, aln_number, len(read.alns), num_switches, ev["start"],
-                                                   ev["stop"], "Left BUR", reference.seq[ev["start"]:ev["stop"] + 1],
-                                                   al.transform(reference=reference, mapping=nontemplated_tf,
-                                                                start=ev["start"], stop=ev["stop"] + 1)])
-                        # Right Boundary Uncertainty Region
-                        nontemplated_snps = len([op for op in nontemplated_tf if ev["stop"] < op[0] <= ev["right"]])
-                        length = ev["right"] - ev["stop"]
-                        if length > 0:
-                            frequency = nontemplated_snps / length
-                            results["right_boundaries"][num_switches][0].append(frequency)
-                            results["right_boundaries"][num_switches][1].append(weight)
-                            event_writer.writerow([read.name, aln_number, len(read.alns), num_switches, ev["start"],
-                                                   ev["stop"], "Right BUR", reference.seq[ev["start"]:ev["stop"] + 1],
-                                                   al.transform(reference=reference, mapping=nontemplated_tf,
-                                                                start=ev["start"], stop=ev["stop"] + 1)])
-                        # Interior and boundaries
-                        nontemplated_snps = len([op for op in nontemplated_tf if ev["left"] <= op[0] <= ev["right"]])
-                        length = ev["right"] - ev["left"] + 1
-                        if length > 0:
-                            frequency = nontemplated_snps / length
-                            results["interior_and_boundaries"][num_switches][0].append(frequency)
-                            results["interior_and_boundaries"][num_switches][1].append(weight)
+                        # filter out reads with overlapping switches
+                        if nonoverlapping_switches_only:
+                            continue_flag = False
+                            for x, (start_idx, stop_idx, sources) in enumerate(switch_set[:-1]):
+                                stop_op = templated_tf[stop_idx - 1]
+                                max_right_pos = max([burs.right[source][stop_op] for source in sources])
+                                next_start_idx, next_stop_idx, next_sources = switch_set[x+1]
+                                next_start_op = templated_tf[next_start_idx]
+                                max_left_pos = min([burs.left[source][next_start_op] for source in next_sources])
+                                if not max_right_pos < max_left_pos:
+                                    continue_flag = True
+                            if continue_flag:
+                                continue
 
-                        # Exterior (between switches only)
-                        if x > 0:
-                            last_ev = sampled_switches[x-1]
-                            if last_ev["right"] < ev["left"]:
-                                nontemplated_snps = len([op for op in nontemplated_tf
-                                                         if last_ev["left"] < op[0] < ev["right"]])
-                                length = ev["right"] - last_ev["left"] - 1
+                        sampled_switches = []
+                        for start_idx, stop_idx, sources in switch_set:
+                            ev = {}
+                            source = random.sample(sources, 1)[0]
+                            start_op = templated_tf[start_idx]
+                            stop_op = templated_tf[stop_idx - 1]
+                            ev["start"] = start_op[0]
+                            ev["stop"] = stop_op[0]
+                            ev["left"] = burs.left[source][start_op]
+                            ev["right"] = burs.right[source][stop_op]
+                            sampled_switches.append(ev)
+                        if not all(ev["stop"] - ev["start"] >= minimum_switch_length for ev in sampled_switches):
+                            continue
+                        # reads with no switches
+                        if num_switches == 0:
+                            nontemplated_snps = len(nontemplated_tf)
+                            length = len(reference.seq)
+                            frequency = nontemplated_snps / length
+                            results["exterior"][0][0].append(frequency)
+                            results["exterior"][0][1].append(weight)
+                            event_writer.writerow([read.name, aln_number, len(read.alns), num_switches, "", "", "",
+                                                   reference.seq, read.seq])
+                        # reads with switches
+                        for x, ev in enumerate(sampled_switches):
+                            # Interior
+                            nontemplated_snps = len([op for op in nontemplated_tf
+                                                     if ev["start"] <= op[0] <= ev["stop"]])
+                            length = ev["stop"] - ev["start"] + 1
+                            if length > 0:
+                                frequency = nontemplated_snps / length
+                                results["interior"][num_switches][0].append(frequency)
+                                results["interior"][num_switches][1].append(weight)
+                                event_writer.writerow([read.name, aln_number, len(read.alns), num_switches, ev["start"],
+                                                       ev["stop"], "Interior", reference.seq[ev["start"]:ev["stop"]+1],
+                                                       al.transform(reference=reference.seq, mapping=nontemplated_tf,
+                                                                    start=ev["start"], stop=ev["stop"]+1)])
+                            # Left Boundary Uncertainty Region
+                            nontemplated_snps = len([op for op in nontemplated_tf if ev["left"] <= op[0] < ev["start"]])
+                            length = ev["start"] - ev["left"]
+                            if length > 0:
+                                frequency = nontemplated_snps/length
+                                results["left_boundaries"][num_switches][0].append(frequency)
+                                results["left_boundaries"][num_switches][1].append(weight)
+                                event_writer.writerow([read.name, aln_number, len(read.alns), num_switches, ev["start"],
+                                                       ev["stop"], "Left BUR", reference.seq[ev["start"]:ev["stop"] + 1],
+                                                       al.transform(reference=reference.seq, mapping=nontemplated_tf,
+                                                                    start=ev["start"], stop=ev["stop"] + 1)])
+                            # Right Boundary Uncertainty Region
+                            nontemplated_snps = len([op for op in nontemplated_tf if ev["stop"] < op[0] <= ev["right"]])
+                            length = ev["right"] - ev["stop"]
+                            if length > 0:
+                                frequency = nontemplated_snps / length
+                                results["right_boundaries"][num_switches][0].append(frequency)
+                                results["right_boundaries"][num_switches][1].append(weight)
+                                event_writer.writerow([read.name, aln_number, len(read.alns), num_switches, ev["start"],
+                                                       ev["stop"], "Right BUR", reference.seq[ev["start"]:ev["stop"] + 1],
+                                                       al.transform(reference=reference.seq, mapping=nontemplated_tf,
+                                                                    start=ev["start"], stop=ev["stop"] + 1)])
+                            # Interior and boundaries
+                            nontemplated_snps = len([op for op in nontemplated_tf if ev["left"] <= op[0] <= ev["right"]])
+                            length = ev["right"] - ev["left"] + 1
+                            if length > 0:
+                                frequency = nontemplated_snps / length
+                                results["interior_and_boundaries"][num_switches][0].append(frequency)
+                                results["interior_and_boundaries"][num_switches][1].append(weight)
+
+                            # Exterior (between switches only)
+                            if x > 0:
+                                last_ev = sampled_switches[x-1]
+                                if last_ev["right"] < ev["left"]:
+                                    nontemplated_snps = len([op for op in nontemplated_tf
+                                                             if last_ev["left"] < op[0] < ev["right"]])
+                                    length = ev["right"] - last_ev["left"] - 1
+                                    if length > 0:
+                                        frequency = nontemplated_snps / length
+                                        results["exterior"][num_switches][0].append(frequency)
+                                        results["exterior"][num_switches][1].append(weight)
+                                        event_writer.writerow(
+                                            [read.name, aln_number, len(read.alns), num_switches, ev["start"],
+                                             ev["stop"], "Exterior", reference.seq[ev["start"]:ev["stop"] + 1],
+                                             al.transform(reference=reference.seq, mapping=nontemplated_tf,
+                                                          start=ev["start"], stop=ev["stop"] + 1)])
+                            # First switch: do leftmost exterior region
+                            if x == 0:
+                                nontemplated_snps = len([op for op in nontemplated_tf if 0 <= op[0] < ev["left"]])
+                                length = ev["left"]
                                 if length > 0:
                                     frequency = nontemplated_snps / length
+                                    results["leftmost_exterior"][num_switches][0].append(frequency)
+                                    results["leftmost_exterior"][num_switches][1].append(weight)
                                     results["exterior"][num_switches][0].append(frequency)
                                     results["exterior"][num_switches][1].append(weight)
-                                    event_writer.writerow(
-                                        [read.name, aln_number, len(read.alns), num_switches, ev["start"],
-                                         ev["stop"], "Exterior", reference.seq[ev["start"]:ev["stop"] + 1],
-                                         al.transform(reference=reference, mapping=nontemplated_tf,
-                                                      start=ev["start"], stop=ev["stop"] + 1)])
-                        # First switch: do leftmost exterior region
-                        if x == 0:
-                            nontemplated_snps = len([op for op in nontemplated_tf if 0 <= op[0] < ev["left"]])
-                            length = ev["left"]
-                            if length > 0:
-                                frequency = nontemplated_snps / length
-                                results["leftmost_exterior"][num_switches][0].append(frequency)
-                                results["leftmost_exterior"][num_switches][1].append(weight)
-                                results["exterior"][num_switches][0].append(frequency)
-                                results["exterior"][num_switches][1].append(weight)
-                                event_writer.writerow([read.name, aln_number, len(read.alns), num_switches, ev["start"],
-                                                       ev["stop"], "Exterior",
-                                                       reference.seq[ev["start"]:ev["stop"] + 1],
-                                                       al.transform(reference=reference, mapping=nontemplated_tf,
-                                                                    start=ev["start"], stop=ev["stop"] + 1)])
-                        # Last switch: do rightmost_exterior region
-                        if x == len(sampled_switches) - 1:
-                            nontemplated_snps = len([op for op in nontemplated_tf
-                                                     if ev["right"] < op[0] <= len(reference.seq)])
-                            length = len(reference.seq) - ev["right"]
-                            if length > 0:
-                                frequency = nontemplated_snps / length
-                                results["rightmost_exterior"][num_switches][0].append(frequency)
-                                results["rightmost_exterior"][num_switches][1].append(weight)
-                                results["exterior"][num_switches][0].append(frequency)
-                                results["exterior"][num_switches][1].append(weight)
-                                event_writer.writerow([read.name, aln_number, len(read.alns), num_switches, ev["start"],
-                                                       ev["stop"], "Exterior",
-                                                       reference.seq[ev["start"]:ev["stop"] + 1],
-                                                       al.transform(reference=reference, mapping=nontemplated_tf,
-                                                                    start=ev["start"], stop=ev["stop"] + 1)])
+                                    event_writer.writerow([read.name, aln_number, len(read.alns), num_switches, ev["start"],
+                                                           ev["stop"], "Exterior",
+                                                           reference.seq[ev["start"]:ev["stop"] + 1],
+                                                           al.transform(reference=reference.seq, mapping=nontemplated_tf,
+                                                                        start=ev["start"], stop=ev["stop"] + 1)])
+                            # Last switch: do rightmost_exterior region
+                            if x == len(sampled_switches) - 1:
+                                nontemplated_snps = len([op for op in nontemplated_tf
+                                                         if ev["right"] < op[0] <= len(reference.seq)])
+                                length = len(reference.seq) - ev["right"]
+                                if length > 0:
+                                    frequency = nontemplated_snps / length
+                                    results["rightmost_exterior"][num_switches][0].append(frequency)
+                                    results["rightmost_exterior"][num_switches][1].append(weight)
+                                    results["exterior"][num_switches][0].append(frequency)
+                                    results["exterior"][num_switches][1].append(weight)
+                                    event_writer.writerow([read.name, aln_number, len(read.alns), num_switches, ev["start"],
+                                                           ev["stop"], "Exterior",
+                                                           reference.seq[ev["start"]:ev["stop"] + 1],
+                                                           al.transform(reference=reference.seq, mapping=nontemplated_tf,
+                                                                        start=ev["start"], stop=ev["stop"] + 1)])
 
             # calculate stats for bootstrapping results
             for result_type, by_num_switches in results.items():
