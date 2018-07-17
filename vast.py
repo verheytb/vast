@@ -177,19 +177,24 @@ if __name__ == "__main__":
     aligncassettes.add_argument("-f", "--force", action="store_true",
                                 help="Force recomputing alignments already in the database.")
 
-    # display stats about the db
-    dbstats = subparsers.add_parser("dbstats",
-                                    help="Display information about the contents of the database.")
-    dbstats.add_argument("--references", "-r", action="store_true",
-                         help="Display information about the reference and cassette sequences in the "
+    # display information from the database
+    refinfo = subparsers.add_parser("reference_info",
+                                    help="Display information about the reference and cassette sequences in the "
                                         "database.")
-    dbstats.add_argument("--ontology", "-o", action="store_true",
-                         help="Display the ontology for reads in the database.")
+    ontologyinfo = subparsers.add_parser("ontology_info",
+                                         help="Display the column headers and number of sequences in the read table.")
 
     # export data in the database to human-readable and other formats
     export = subparsers.add_parser("export_references",
                                    help="Export references in the database as fasta files (for the sequence) and bam "
                                         "files (for the aligned cassette sequences).")
+
+    # view reads and dependent information by name
+    viewreads = subparsers.add_parser("view_reads",
+                                     help="View read information for a specified read.")
+    viewreads.add_argument("name")
+    viewreads.add_argument("-f", "--format", type=str, choices=("fasta", "fastq", "sam", "bam", "tab"), default="tab",
+                          help="Choose a format for output to STDOUT.")
 
     # map variants
     map_variants_subparser = subparsers.add_parser("map",
@@ -434,41 +439,41 @@ if __name__ == "__main__":
         utl.tprint("Saving database to disk...")
         db.save(list(reads.values()), "reads")
 
-    elif args.subcommand == "dbstats":
+    elif args.subcommand == "reference_info":
         db = Database()
-        if args.references:
-            references = db.get_and_check_references()
-            utl.tprint("Reference Information:")
-            for r in references.values():
-                print("*"*shutil.get_terminal_size()[0])
-                print("Reference name:", r.name)
-                print("Reference sequence:", r.seq)
-                print("Reference offset:", int(r.offset))
-                if r.variable_regions:
-                    vrstring = ", ".join(str(pair[0]+r.offset) + "–" + str(pair[1]+r.offset)
-                                         for pair in r.variable_regions)
-                else:
-                    vrstring = "None"
-                print("VR Annotations:", vrstring)
-                if r.cassettes is None:
-                    print("No cassettes associated with this reference.")
-                else:
-                    print("Cassettes:")
-                    for name, casseq in r.cassettes.items():
-                        print("\t%s | %sbp | %s" % (name, len(casseq),
-                                                    ("aligned" if r.cassettes_aln else "not aligned")))
-                        print(casseq)
+        references = db.get_and_check_references()
+        utl.tprint("Reference Information:")
+        for r in references.values():
+            print("*"*shutil.get_terminal_size()[0])
+            print("Reference name:", r.name)
+            print("Reference sequence:", r.seq)
+            print("Reference offset:", int(r.offset))
+            if r.variable_regions:
+                vrstring = ", ".join(str(pair[0]+r.offset) + "–" + str(pair[1]+r.offset)
+                                     for pair in r.variable_regions)
+            else:
+                vrstring = "None"
+            print("VR Annotations:", vrstring)
+            if r.cassettes is None:
+                print("No cassettes associated with this reference.")
+            else:
+                print("Cassettes:")
+                for name, casseq in r.cassettes.items():
+                    print("\t%s | %sbp | %s" % (name, len(casseq),
+                                                ("aligned" if r.cassettes_aln else "not aligned")))
+                    print(casseq)
 
-        if args.ontology:
-            reads = db.get_and_check_reads()
-            tagsets = {}
-            for read in reads:
-                tagset = tuple(tag for tag in read.tags.keys() if tag is not None)
-                if tagset not in tagsets:
-                    tagsets[tagset] = 0
-                tagsets[tagset] += 1
-            for x, (tagset, count) in enumerate(tagsets.items(), start=1):
-                print("Ontology %d (%d reads): %s" % (x, count, str(tagset)))
+    elif args.subcommand == "ontology":
+        db = Database()
+        reads = db.get_and_check_reads()
+        tagsets = {}
+        for read in reads:
+            tagset = tuple(tag for tag in read.tags.keys() if tag is not None)
+            if tagset not in tagsets:
+                tagsets[tagset] = 0
+            tagsets[tagset] += 1
+        for x, (tagset, count) in enumerate(tagsets.items(), start=1):
+            print("Ontology %d (%d reads): %s" % (x, count, str(tagset)))
 
     elif args.subcommand == "remove":
         db = Database()
@@ -481,6 +486,65 @@ if __name__ == "__main__":
         for index in indices:
             reads = [read for read in reads if read.name != args.name]
         db.save(reads, "reads")
+
+    elif args.subcommand == "view_reads":
+        db = Database()
+        reads = db.get_and_check_reads()
+        references = db.get_and_check_references()
+
+        if args.format == "tab":
+            print("Read Name\tTags\tAlignment ID\tRead Mapping")
+            for read in reads:
+                if read.name == args.name:
+                    for x, aln in enumerate(read.alns, 1):
+                        print("\t".join([read.name, repr(read.tags), str(x), repr(aln.transform)]))
+        elif args.format == "fasta":
+            for read in reads:
+                if read.name == args.name:
+                    print(">" + read.name)
+                    for chunk in range(len(read.seq) // 80 + 1):
+                        start = chunk * 80
+                        stop = (chunk + 1) * 80
+                        print(read.seq[start:stop])
+        elif args.format == "fastq":
+            if not all(read.qual for read in reads):
+                utl.tprint("Error: Imported reads did not have associated quality values. Either re-import reads in "
+                           "FASTQ format, or view reads in FASTA format.")
+                sys.exit()
+            for read in reads:
+                if read.name == args.name:
+                    print("@" + read.name)
+                    for chunk in range(len(read.seq) // 80 + 1):
+                        start = chunk * 80
+                        stop = (chunk + 1) * 80
+                        print(read.seq[start:stop])
+                    print("+")
+                    for chunk in range(len(read.seq) // 80 + 1):
+                        start = chunk * 80
+                        stop = (chunk + 1) * 80
+                        print(read.qual[start:stop])
+        elif args.format in ("bam","sam"):
+            if not pysam:
+                utl.tprint("Error: pysam could not be accessed, but is required for output in the SAM/BAM formats.")
+                sys.exit()
+            for read in reads:
+                if read.name == args.name:
+                    reference = references[read.refid]
+                    header = {'HD': {'VN': '1.0'}, 'SQ': [{'LN': len(reference.seq), 'SN': reference.name}]}
+                    if args.format == "bam":
+                        mode = "wb"
+                    else:
+                        mode = "w"
+                    with pysam.AlignmentFile("-", mode, header=header) as outf:
+                        for x, aln in enumerate(read.alns, 1):
+                            a = pysam.AlignedSegment()
+                            a.query_name = read.name + "/%d" % x
+                            a.query_sequence = al.transform(reference=reference.seq, mapping=aln.transform)
+                            a.reference_id = 0
+                            a.reference_start = aln.start
+                            a.cigar = aln.cigar
+                            outf.write(a)
+
 
 
     elif args.subcommand == "export_references":
@@ -568,9 +632,9 @@ if __name__ == "__main__":
         # Starts a process to save results
         def switches_writer():
             write_counter = 0
-            while counter.value < total or not resultQueue.empty():     # When the counter is full, final results may
-                read_mapping, refid, switch_sets = resultQueue.get()    # not yet be written to disk, hence the need to
-                results[(read_mapping, refid)] = switch_sets            # check both conditions before quitting.
+            while write_counter < total:
+                read_mapping, refid, switch_sets = resultQueue.get()
+                results[(read_mapping, refid)] = switch_sets
                 if write_counter % 250 == 0:
                     db.save(results, "switches")
                 write_counter += 1
@@ -603,7 +667,7 @@ if __name__ == "__main__":
         for i in process_list:
             i.join()
 
-        # stops writer process
+        # joins writer process
         writer_process.join()
         utl.tprint("Computed switches for all %d reads.              " % total)
 

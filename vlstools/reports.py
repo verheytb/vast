@@ -1074,7 +1074,6 @@ def nontemplated_reads_bam(data, reportdir, database, reads_with_type="IDS"):
     """
     if not pysam:
         raise ImportError("The \"nontemp_indels_bam\" report requires pysam.")
-    assert pysam  # check that pysam is imported
     reads_with_type = reads_with_type.upper()
     references = database.get("references")
 
