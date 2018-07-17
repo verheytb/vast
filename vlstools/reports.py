@@ -17,7 +17,9 @@ import numpy as np
 import pandas as pd
 from scipy import stats, signal, ndimage
 from statsmodels.stats.weightstats import DescrStatsW
-from matplotlib import rcParams
+from matplotlib import use, rcParams
+use("Agg")  # for non-interactive environments like Windows Subsystem for Linux (WSL)
+rcParams['pdf.fonttype'] = 42  # Decrease font size to prevent clashing in larger plots.
 from matplotlib import pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 from matplotlib.cm import get_cmap, colors
@@ -32,12 +34,6 @@ import vlstools.zip as zi
 import vlstools.simulations as si
 import vlstools.utils as ut
 math.exp = ut.quiet_exp  # overwrite the exponential function to prevent overflow errors in stats.anderson_ksamp
-
-# Decrease font size to prevent clashing in larger plots.
-rcParams['pdf.fonttype'] = 42
-
-# Switch backend for non-interactive environments
-plt.switch_backend('agg')
 
 
 def simple_functions(metric, data, reportdir, database, count_indels_once=False, min_switch_size=1):
