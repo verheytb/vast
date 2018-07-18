@@ -2926,11 +2926,11 @@ def cassette_sequence_identity(data, reportdir, database):
             basename = os.path.join(reportdir, refid)
             seq_ids = [reference.name]
             seq_transforms = {tuple(): len(reference.seq)}
-
-            # method 1: map distance
             for casname, casaln in sorted(list(reference.cassettes_aln.items()), key=lambda x:x[0]):
                 seq_ids.append(casname)
                 seq_transforms[al.trim_transform(casaln.transform, len(reference.seq))] = casaln.end - casaln.start
+
+            # method 1: map distance
             data = [[1 - al.map_distance(tf1, tf2) / min((size1, size2))
                      for tf1, size1 in seq_transforms.items()]
                     for tf2, size2 in seq_transforms.items()]
@@ -2941,10 +2941,6 @@ def cassette_sequence_identity(data, reportdir, database):
                     tsv_writer.writerow([seq_id] + row)
 
             # method 2: exclusive ops
-            for casname, casaln in sorted(list(reference.cassettes_aln.items()), key=lambda x: x[0]):
-                seq_ids.append(casname)
-                seq_transforms[
-                    al.trim_transform(casaln.transform, len(reference.seq))] = casaln.end - casaln.start
             data = [[1 - len(set(tf1) ^ set(tf2)) / min((size1, size2))
                      for tf1, size1 in seq_transforms.items()]
                     for tf2, size2 in seq_transforms.items()]
@@ -2955,7 +2951,7 @@ def cassette_sequence_identity(data, reportdir, database):
                     tsv_writer.writerow([seq_id] + row)
 
 
-def switching_and_nontemplated(data, reportdir, database, bootstrap=100, changetypes="IDS", minimum_switch_length=0,
+def switching_and_nontemplated(data, reportdir, database, bootstrap=10, changetypes="IDS", minimum_switch_length=0,
                                unambiguous_switches_only=False, nonoverlapping_switches_only=False):
     """
 
