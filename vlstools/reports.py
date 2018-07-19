@@ -39,7 +39,10 @@ math.exp = ut.quiet_exp  # overwrite the exponential function to prevent overflo
 def simple_functions(metric, data, reportdir, database, count_indels_once=False, min_switch_size=1):
     references = database.get("references")
     switches = database.get("switches")
-    slips = database.get("slips")
+    try:
+        database.get("slips")
+    except FileNotFoundError:
+        slips = None
     tag_labels = list(set(t[0] for refid, tags, read_subset in data for t in tags))
     tsvpath = os.path.join(reportdir, "report.tsv")
     with open(tsvpath, "w") as handle:

@@ -463,7 +463,7 @@ if __name__ == "__main__":
                                                 ("aligned" if r.cassettes_aln else "not aligned")))
                     print(casseq)
 
-    elif args.subcommand == "ontology":
+    elif args.subcommand == "ontology_info":
         db = Database()
         reads = db.get_and_check_reads()
         tagsets = {}
