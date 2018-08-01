@@ -588,12 +588,12 @@ def snp_positions(data, reportdir, database, numtrials=10):
         with PdfPages(os.path.join(reportdir, ut.get_tagstring(refid=refid, tags=tags) + ".pdf")) as pdf:
             # Page 1: All SNPs vs position.
             fig, (ax_all_snps, ax_cassettes) = plt.subplots(2, figsize=(8, 8), sharex=True)
-            ax_all_snps.bar(height=all_snps, left=coords, width=1, linewidth=0, color="black")
+            ax_all_snps.bar(height=all_snps, x=coords, width=1, linewidth=0, color="black")
             ax_all_snps.set_title("Observed Variants")
             ax_all_snps.set_ylabel("SNP Frequency")
             ax_all_snps.set_xlabel("vlsE position (bp)")
             if reference.cassettes_aln is not None:
-                ax_cassettes.bar(height=cassette_snps, left=coords, width=1, linewidth=0, color="black")
+                ax_cassettes.bar(height=cassette_snps, x=coords, width=1, linewidth=0, color="black")
                 ax_cassettes.set_title("Reference Cassettes")
                 ax_cassettes.set_ylabel("Frequency of SNPs in silent cassettes")
                 ax_cassettes.set_xlabel("vlsE position (bp)")
@@ -603,10 +603,10 @@ def snp_positions(data, reportdir, database, numtrials=10):
             # Page 2: Templated and Nontemplated SNPs vs position.
             if reference.cassettes_aln is not None:
                 fig, (ax_temp_snps, ax_nontemp_snps) = plt.subplots(2, figsize=(8, 8), sharex=True)
-                ax_temp_snps.bar(height=templated_hist, left=coords, width=1, linewidth=0, color="black")
+                ax_temp_snps.bar(height=templated_hist, x=coords, width=1, linewidth=0, color="black")
                 ax_temp_snps.set_ylabel("Frequency of Templated SNPs")
                 ax_temp_snps.set_xlabel("vlsE position (bp)")
-                ax_nontemp_snps.bar(height=nontemplated_hist, left=coords, width=1, linewidth=0, color="black")
+                ax_nontemp_snps.bar(height=nontemplated_hist, x=coords, width=1, linewidth=0, color="black")
                 ax_nontemp_snps.set_ylabel("Frequency of Non-Templated SNPs")
                 ax_nontemp_snps.set_xlabel("vlsE position (bp)")
                 plt.tight_layout()
@@ -615,7 +615,7 @@ def snp_positions(data, reportdir, database, numtrials=10):
 
                 # Page 3: Templated SNPs and G-runs
                 fig, ax = plt.subplots(1, figsize=(8, 6), sharex=True)
-                ax.bar(height=templated_hist, left=coords, width=1, linewidth=0, color="black")
+                ax.bar(height=templated_hist, x=coords, width=1, linewidth=0, color="black")
                 grun_size = 3
                 for x, is_g in enumerate(al.find_poly_g(reference.seq, grun_size)):
                     pos = x + reference.offset
@@ -633,7 +633,7 @@ def snp_positions(data, reportdir, database, numtrials=10):
                 for x, vr in enumerate(reference.variable_regions, start=1):  # show VRs in the background
                     ax2.axvspan(vr[0] + reference.offset, vr[1] + reference.offset,
                                 ymax=0.05, facecolor='lightsage', alpha=0.75, linewidth=0)
-                ax1.bar(height=templated_hist, left=coords, width=1, linewidth=0, color="darkblue")
+                ax1.bar(height=templated_hist, x=coords, width=1, linewidth=0, color="darkblue")
                 ax1.set_ylabel("Frequency of Templated SNPs", color="darkblue")
                 ax1.set_xlabel("vlsE position (bp)")
                 ax1.set_xlim(min(coords), max(coords))
@@ -643,7 +643,7 @@ def snp_positions(data, reportdir, database, numtrials=10):
                 for tl in ax1.get_yticklabels():
                     tl.set_color("darkblue")
 
-                ax2.bar(height=nontemplated_hist, left=coords,
+                ax2.bar(height=nontemplated_hist, x=coords,
                         width=1, linewidth=0, color="firebrick")
                 ax2.set_ylabel("Frequency of Non-Templated SNPs", color="firebrick")
                 ax2.set_xlabel("vlsE position (bp)")
@@ -660,7 +660,7 @@ def snp_positions(data, reportdir, database, numtrials=10):
                 # Page 5: Mirror plot comparing the distribution of Templated to Cassettes
                 fig, (ax1, ax2) = plt.subplots(2, figsize=(8, 8), sharex=True)
                 plt.subplots_adjust(hspace=0)
-                ax1.bar(height=templated_hist, left=coords, width=1, linewidth=0, color="green")
+                ax1.bar(height=templated_hist, x=coords, width=1, linewidth=0, color="green")
                 ax1.set_ylabel("Frequency of Templated SNPs", color="green")
                 ax1.set_xlabel("vlsE position (bp)")
                 ax1.set_xlim(min(coords), max(coords))
@@ -670,7 +670,7 @@ def snp_positions(data, reportdir, database, numtrials=10):
                 for tl in ax1.get_yticklabels():
                     tl.set_color("green")
 
-                ax2.bar(height=cassette_snps, left=coords, width=1, linewidth=0, color="red")
+                ax2.bar(height=cassette_snps, x=coords, width=1, linewidth=0, color="red")
                 ax2.set_ylabel("Frequency of SNPs in Silent Cassettes", color="red")
                 ax2.set_xlabel("vlsE position (bp)")
                 ax2.set_ylim(ax2.get_ylim()[::-1])
@@ -690,7 +690,7 @@ def snp_positions(data, reportdir, database, numtrials=10):
                 # events by whether they are at the end of silent cassettes.
                 fig, (ax1, ax2) = plt.subplots(2, figsize=(8, 8), sharex=True)
                 plt.subplots_adjust(hspace=0)
-                ax1.bar(height=templated_hist, left=coords, width=1, linewidth=0, color="green")
+                ax1.bar(height=templated_hist, x=coords, width=1, linewidth=0, color="green")
                 ax1.set_ylabel("Frequency of Templated SNPs", color="green")
                 ax1.set_xlabel("vlsE position (bp)")
                 ax1.set_xlim(min(coords), max(coords))
@@ -700,7 +700,7 @@ def snp_positions(data, reportdir, database, numtrials=10):
                 for tl in ax1.get_yticklabels():
                     tl.set_color("green")
 
-                ax2.bar(height=cassette_snps_30, left=coords, width=1, linewidth=0, color="black")
+                ax2.bar(height=cassette_snps_30, x=coords, width=1, linewidth=0, color="black")
                 ax2.bar(height=cassette_snps_not30, bottom=cassette_snps_30,
                         left=coords, width=1, linewidth=0, color="red")
                 ax2.set_ylabel("Frequency of SNPs in Silent Cassettes", color="red")
@@ -722,7 +722,7 @@ def snp_positions(data, reportdir, database, numtrials=10):
                 ratios = [(a / sum(templated_hist) - t / sum(cassette_snps))
                           for a, t in zip(templated_hist, cassette_snps)]
                 fig, ax = plt.subplots(1, figsize=(14, 6))
-                ax.bar(left=coords, height=ratios, width=1, linewidth=0, color="darkblue")
+                ax.bar(x=coords, height=ratios, width=1, linewidth=0, color="darkblue")
                 ax.set_ylabel("Fold Difference")
                 ax.set_xlabel("vlsE position (bp)")
                 ax.set_xlim(min(coords), max(coords))
@@ -732,12 +732,12 @@ def snp_positions(data, reportdir, database, numtrials=10):
                 # Page 8: Cross-correlation of all/cassettes and templated/nontemplated snp frequencies.
                 fig, (ax_nontemp, ax_all) = plt.subplots(2, figsize=(8, 8))
                 crosscorr = signal.correlate(templated_hist, nontemplated_hist, mode="same")
-                ax_nontemp.bar(height=crosscorr, left=[x - coords[0] - len(coords) / 2 for x in coords],
+                ax_nontemp.bar(height=crosscorr, x=[x - coords[0] - len(coords) / 2 for x in coords],
                                width=1, linewidth=0, color="black")
                 ax_nontemp.set_title("Cross-Correlation of Nontemplated and Templated SNP Frequencies")
                 ax_nontemp.set_xlabel("offset")
                 crosscorr = signal.correlate(all_snps, cassette_snps, mode="same")
-                ax_all.bar(height=crosscorr, left=[x - coords[0] - len(coords) / 2 for x in coords],
+                ax_all.bar(height=crosscorr, x=[x - coords[0] - len(coords) / 2 for x in coords],
                            width=1, linewidth=0, color="black")
                 ax_all.set_title("Cross-Correlation of Observed and Theoretical SNP Frequencies")
                 ax_all.set_xlabel("offset")
@@ -1037,7 +1037,7 @@ def ids_colocation(data, reportdir, database, numtrials=10):
                 fig, (ax1, ax2) = plt.subplots(2, figsize=(8, 8), sharex=True)
                 fig.suptitle("")
                 plt.subplots_adjust(hspace=0)
-                ax1.bar(height=hist["temp_hist"], left=coords, width=1, linewidth=0, color="green")
+                ax1.bar(height=hist["temp_hist"], x=coords, width=1, linewidth=0, color="green")
                 ax1.set_ylabel("Frequency of Templated %s" % friendly_names[hist["temp_ops"]], color="green")
                 ax1.set_xlabel("vlsE position (bp)")
                 ax1.set_xlim(min(coords), max(coords))
@@ -1047,7 +1047,7 @@ def ids_colocation(data, reportdir, database, numtrials=10):
                 for tl in ax1.get_yticklabels():
                     tl.set_color("green")
 
-                ax2.bar(height=hist["nontemp_hist"], left=coords, width=1, linewidth=0, color="firebrick")
+                ax2.bar(height=hist["nontemp_hist"], x=coords, width=1, linewidth=0, color="firebrick")
                 ax2.set_ylabel("Frequency of Nontemplated %s" % friendly_names[hist["nontemp_ops"]],
                                color="firebrick")
                 ax2.set_xlabel("vlsE position (bp)")
@@ -1163,7 +1163,7 @@ def two_subset_comparison(data, reportdir, database, reverse_order=False):
         # data1 vs data2 Templated SNP Frequencies
         fig, (ax1, ax2) = plt.subplots(2, figsize=(8, 8), sharex=True)
         plt.subplots_adjust(hspace=0)
-        ax1.bar(height=hist1, left=coords, width=1, linewidth=0, color="green")
+        ax1.bar(height=hist1, x=coords, width=1, linewidth=0, color="green")
         ax1.set_ylabel("Templated SNP density (%s)" % name1, color="green")
         ax1.set_xlabel("vlsE position (bp)")
         ax1.set_xlim(min(coords), max(coords))
@@ -1173,7 +1173,7 @@ def two_subset_comparison(data, reportdir, database, reverse_order=False):
         for tl in ax1.get_yticklabels():
             tl.set_color("green")
 
-        ax2.bar(height=hist2, left=coords, width=1, linewidth=0, color="red")
+        ax2.bar(height=hist2, x=coords, width=1, linewidth=0, color="red")
         ax2.set_ylabel("Templated SNP density (%s)" % name2, color="red")
         ax2.set_xlabel("vlsE position (bp)")
         ax2.set_ylim(ax2.get_ylim()[::-1])
@@ -1193,7 +1193,7 @@ def two_subset_comparison(data, reportdir, database, reverse_order=False):
         past_histograms = [0] * len(reference.seq)
         for b in "ACTG":
             normhist = ut.normalize(base_normhist1[b])
-            ax1.bar(height=normhist, bottom=past_histograms, left=coords, width=1, linewidth=0,
+            ax1.bar(height=normhist, bottom=past_histograms, x=coords, width=1, linewidth=0,
                     color=colours[b])
             past_histograms = np.add(past_histograms, normhist)
         ax1.set_ylabel("Normalized per-base enrichment (Templated Substitutions, %s)" % name1)
@@ -1205,7 +1205,7 @@ def two_subset_comparison(data, reportdir, database, reverse_order=False):
         past_histograms = [0] * len(reference.seq)
         for b in "ACTG":
             normhist = ut.normalize(base_normhist2[b])
-            ax2.bar(height=normhist, bottom=past_histograms, left=coords, width=1, linewidth=0,
+            ax2.bar(height=normhist, bottom=past_histograms, x=coords, width=1, linewidth=0,
                     color=colours[b])
             past_histograms = np.add(past_histograms, normhist)
         ax2.set_ylabel("Normalized per-base enrichment (Templated Substitutions, %s)" % name2)
@@ -1227,7 +1227,7 @@ def two_subset_comparison(data, reportdir, database, reverse_order=False):
                 norm1 = ut.normalize(base_normhist1[b])
                 norm2 = ut.normalize(base_normhist2[b])
                 histogram = [s - w if ((s > w) == is_positive) else 0 for s, w in zip(norm1, norm2)]
-                ax.bar(height=histogram, bottom=past_histograms, left=coords, width=1, linewidth=0, color=colours[b])
+                ax.bar(height=histogram, bottom=past_histograms, x=coords, width=1, linewidth=0, color=colours[b])
                 past_histograms = np.add(past_histograms, histogram)
         ax.set_ylabel("Templated substitution frequency (%s minus %s)" % (name1, name2))
         ax.set_xlabel("vlsE position (bp)")
@@ -1296,7 +1296,7 @@ def slippage(data, reportdir, database):
                 for idx, r in sliptable.iterrows():
                     for x in range(r["Start Position"], r["Start Position"] + r["Total Repeat Length"]):
                         observed_hist[x] += abs(r["Total Shift"]) / r["Total Repeat Length"] / len(read_subset)
-                ax1.bar(height=observed_hist, left=coords, width=1, linewidth=0, color="darkblue")
+                ax1.bar(height=observed_hist, x=coords, width=1, linewidth=0, color="darkblue")
                 ax1.set_ylabel("Frequency of slipped bases per read", color="darkblue")
                 ax1.set_xlim(min(coords), max(coords))
                 ax1.spines['bottom'].set_visible(False)
@@ -1316,7 +1316,7 @@ def slippage(data, reportdir, database):
                         elif op[1] == "I":
                             cassette_snps[op[0]] += len(op[2])
                 cassette_snps = [x / len(reference.cassettes_aln) for x in cassette_snps]
-                ax2.bar(height=cassette_snps, left=coords,
+                ax2.bar(height=cassette_snps, x=coords,
                         width=1, linewidth=0, color="firebrick")
                 ax2.set_ylabel("Frequency of SNPs in silent cassettes", color="firebrick")
                 ax2.set_xlabel("vlsE position (bp)")
@@ -1354,8 +1354,8 @@ def slippage(data, reportdir, database):
                 unitlength_hist = [0] * maxul
                 for tr in ref_tandem_repeats:
                     unitlength_hist[tr[2] - 1] += 1
-                ax1.bar(left=coords, height=ref_hist, width=1, linewidth=0, color="firebrick")
-                ax2.bar(left=unitlength_hist_bins, height=unitlength_hist, width=1, linewidth=0, color="darkblue")
+                ax1.bar(x=coords, height=ref_hist, width=1, linewidth=0, color="firebrick")
+                ax2.bar(x=unitlength_hist_bins, height=unitlength_hist, width=1, linewidth=0, color="darkblue")
                 pdf.savefig()
                 plt.close()
 
@@ -1446,7 +1446,7 @@ def long_switches(data, reportdir, database, minimum_length=40):
         with PdfPages(os.path.join(reportdir, ut.get_tagstring(refid=refid, tags=tags) + ".pdf")) as pdf:
             # Page 1: Density
             fig, ax = plt.subplots(1, figsize=(8, 8))
-            ax.bar(height=switch_density, left=coords, width=1, linewidth=0, color="black")
+            ax.bar(height=switch_density, x=coords, width=1, linewidth=0, color="black")
             ax.set_title("Density of switches longer than %d bp" % minimum_length)
             ax.set_ylabel("Number of Switches")
             ax.set_xlabel("vlsE position (bp)")
@@ -1527,7 +1527,7 @@ def detailed_switch_length(data, reportdir, database, use_length_correction=Fals
                 ax1 = plt.subplot2grid((3, 1), (0, 0))
                 ax2 = plt.subplot2grid((3, 1), (1, 0), rowspan=2)
                 for ax in (ax1, ax2):
-                    ax.bar(left=histbins[:-1], height=hist * 100 / sum(hist), width=1, linewidth=0, color="black")
+                    ax.bar(x=histbins[:-1], height=hist * 100 / sum(hist), width=1, linewidth=0, color="black")
                     ax.set_xlim((0, 150))
                     ax.axvline(wstats.mean)
                 ax2.set_xlabel("Measured Length (bp)")
@@ -1555,7 +1555,7 @@ def detailed_switch_length(data, reportdir, database, use_length_correction=Fals
 
                 # Page 2: Distribution of all switch sizes
                 fig, ax = plt.subplots(figsize=(8, 8))
-                ax.bar(left=histbins[:-1], height=hist, width=1, linewidth=0, color="black")
+                ax.bar(x=histbins[:-1], height=hist, width=1, linewidth=0, color="black")
                 ax.set_xlabel("Measured Length (bp)")
                 ax.set_ylabel("Frequency")
                 pdf.savefig()
@@ -1569,7 +1569,7 @@ def detailed_switch_length(data, reportdir, database, use_length_correction=Fals
                         histbins = np.arange(min(switches_for_n) - 0.5, max(switches_for_n) + 1.5, 1)
                         hist, bin_edges = np.histogram(a=switches_for_n, weights=weights_for_n, bins=histbins)
                         fig, ax = plt.subplots(figsize=(8, 8))
-                        ax.bar(left=histbins[:-1], height=hist, width=1, linewidth=0, color="black")
+                        ax.bar(x=histbins[:-1], height=hist, width=1, linewidth=0, color="black")
                         ax.set_xlabel("Measured Length (bp)")
                         ax.set_ylabel("Frequency")
                         fig.suptitle("Reads with %d switches" % num_switches)
@@ -1927,7 +1927,7 @@ def variant_frequency(data, reportdir, database, max_venn=4):
             # Page 5: Mirror plot comparing the distribution of Templated to Cassettes
             fig, (ax1, ax2) = plt.subplots(2, figsize=(8, 8), sharex=True)
             plt.subplots_adjust(hspace=0)
-            ax1.bar(height=hist, left=coords, width=1, linewidth=0, color="darkblue")
+            ax1.bar(height=hist, x=coords, width=1, linewidth=0, color="darkblue")
             ax1.set_ylabel("Frequency of Templated SNPs", color="darkblue")
             ax1.set_xlabel("vlsE position (bp)")
             ax1.set_xlim(min(coords), max(coords))
@@ -1937,7 +1937,7 @@ def variant_frequency(data, reportdir, database, max_venn=4):
             for tl in ax1.get_yticklabels():
                 tl.set_color("darkblue")
 
-            ax2.bar(height=cassette_snps, left=coords, width=1, linewidth=0, color="firebrick")
+            ax2.bar(height=cassette_snps, x=coords, width=1, linewidth=0, color="firebrick")
             ax2.set_ylabel("Frequency of SNPs in Silent Cassettes", color="firebrick")
             ax2.set_xlabel("vlsE position (bp)")
             ax2.set_ylim(ax2.get_ylim()[::-1])
@@ -2151,9 +2151,9 @@ def distance_between_switches(data, reportdir, database, switchlength, iteration
             all_data = sim_mins + sim_mids + sim_maxes + mins + mids + maxes
             histbins = np.arange(min(all_data), max(all_data) + 1, 50)
             actual_hist, _ = np.histogram(a=mins, weights=weights, bins=histbins)
-            ax_actual.bar(left=histbins[:-1], height=actual_hist, width=50, linewidth=0, color="black")
+            ax_actual.bar(x=histbins[:-1], height=actual_hist, width=50, linewidth=0, color="black")
             simulated_hist, _ = np.histogram(a=sim_mins, bins=histbins)
-            ax_simulated.bar(left=histbins[:-1], height=simulated_hist, width=50, linewidth=0, color="black")
+            ax_simulated.bar(x=histbins[:-1], height=simulated_hist, width=50, linewidth=0, color="black")
             ax_simulated.set_xlabel("Distance between switches (bp)")
             ax_actual.set_ylabel("Frequency (Actual)")
             ax_simulated.set_ylabel("Frequency (Simulated)")
@@ -2166,9 +2166,9 @@ def distance_between_switches(data, reportdir, database, switchlength, iteration
             all_data = sim_mins + sim_mids + sim_maxes + mins + mids + maxes
             histbins = np.arange(min(all_data), max(all_data) + 1)
             actual_hist, _ = np.histogram(a=mins, weights=weights, bins=histbins)
-            ax_actual.bar(left=histbins[:-1], height=actual_hist, width=1, linewidth=0, color="black")
+            ax_actual.bar(x=histbins[:-1], height=actual_hist, width=1, linewidth=0, color="black")
             simulated_hist, _ = np.histogram(a=sim_mins, bins=histbins)
-            ax_simulated.bar(left=histbins[:-1], height=simulated_hist, width=1, linewidth=0, color="black")
+            ax_simulated.bar(x=histbins[:-1], height=simulated_hist, width=1, linewidth=0, color="black")
             ax_simulated.set_xlabel("Distance between switches (bp)")
             ax_actual.set_ylabel("Frequency (Actual)")
             ax_simulated.set_ylabel("Frequency (Simulated)")
@@ -2180,9 +2180,9 @@ def distance_between_switches(data, reportdir, database, switchlength, iteration
             all_data = sim_mins + sim_mids + sim_maxes + mins + mids + maxes
             histbins = np.arange(min(all_data), max(all_data) + 1)
             actual_hist, _ = np.histogram(a=mids, weights=weights, bins=histbins)
-            ax_actual.bar(left=histbins[:-1], height=actual_hist, width=1, linewidth=0, color="black")
+            ax_actual.bar(x=histbins[:-1], height=actual_hist, width=1, linewidth=0, color="black")
             simulated_hist, _ = np.histogram(a=sim_mids, bins=histbins)
-            ax_simulated.bar(left=histbins[:-1], height=simulated_hist, width=1, linewidth=0, color="black")
+            ax_simulated.bar(x=histbins[:-1], height=simulated_hist, width=1, linewidth=0, color="black")
             ax_simulated.set_xlabel("Distance between switches (bp)")
             ax_actual.set_ylabel("Frequency (Actual)")
             ax_simulated.set_ylabel("Frequency (Simulated)")
@@ -2194,9 +2194,9 @@ def distance_between_switches(data, reportdir, database, switchlength, iteration
             all_data = sim_mins + sim_mids + sim_maxes + mins + mids + maxes
             histbins = np.arange(min(all_data), max(all_data) + 1)
             actual_hist, _ = np.histogram(a=maxes, weights=weights, bins=histbins)
-            ax_actual.bar(left=histbins[:-1], height=actual_hist, width=1, linewidth=0, color="black")
+            ax_actual.bar(x=histbins[:-1], height=actual_hist, width=1, linewidth=0, color="black")
             simulated_hist, _ = np.histogram(a=sim_maxes, bins=histbins)
-            ax_simulated.bar(left=histbins[:-1], height=simulated_hist, width=1, linewidth=0, color="black")
+            ax_simulated.bar(x=histbins[:-1], height=simulated_hist, width=1, linewidth=0, color="black")
             ax_simulated.set_xlabel("Distance between switches (bp)")
             ax_actual.set_ylabel("Frequency (Actual)")
             ax_simulated.set_ylabel("Frequency (Simulated)")
