@@ -576,7 +576,8 @@ if __name__ == "__main__":
         unique_mappables = set((r.seq, r.refid) for r in reads if r.alns is None)
         arg_generator = ((seq, references[refid]) for seq, refid in unique_mappables)
         with multiprocessing.Pool(args.cpus) as P:
-            for count, (seq, refid, alns) in enumerate(P.imap(al.read_align_worker, arg_generator), start=1):
+            for count, (seq, refid, alns) in enumerate(P.imap(al.read_align_worker, arg_generator, chunksize=25),
+                                                       start=1):
                 for r in reads:
                     if r.seq == seq and r.refid == refid:
                         if args.justify:
