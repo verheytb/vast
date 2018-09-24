@@ -632,7 +632,7 @@ def snp_positions(data, reportdir, database, numtrials=10):
                 plt.subplots_adjust(hspace=0)
                 for x, vr in enumerate(reference.variable_regions, start=1):  # show VRs in the background
                     ax2.axvspan(vr[0] + reference.offset, vr[1] + reference.offset,
-                                ymax=0.05, facecolor='lightsage', alpha=0.75, linewidth=0)
+                                ymax=0.05, facecolor='#8B9476', alpha=0.75, linewidth=0)
                 ax1.bar(height=templated_hist, x=coords, width=1, linewidth=0, color="darkblue")
                 ax1.set_ylabel("Frequency of Templated SNPs", color="darkblue")
                 ax1.set_xlabel("vlsE position (bp)")
@@ -702,7 +702,7 @@ def snp_positions(data, reportdir, database, numtrials=10):
 
                 ax2.bar(height=cassette_snps_30, x=coords, width=1, linewidth=0, color="black")
                 ax2.bar(height=cassette_snps_not30, bottom=cassette_snps_30,
-                        left=coords, width=1, linewidth=0, color="red")
+                        x=coords, width=1, linewidth=0, color="red")
                 ax2.set_ylabel("Frequency of SNPs in Silent Cassettes", color="red")
                 ax2.set_xlabel("vlsE position (bp)")
                 ax2.set_ylim(ax2.get_ylim()[::-1])
@@ -719,42 +719,43 @@ def snp_positions(data, reportdir, database, numtrials=10):
                 plt.close()
 
                 # Page 7: Difference of Normalized Actual Templated Changes to Theoretical Changes
-                ratios = [(a / sum(templated_hist) - t / sum(cassette_snps))
-                          for a, t in zip(templated_hist, cassette_snps)]
-                fig, ax = plt.subplots(1, figsize=(14, 6))
-                ax.bar(x=coords, height=ratios, width=1, linewidth=0, color="darkblue")
-                ax.set_ylabel("Fold Difference")
-                ax.set_xlabel("vlsE position (bp)")
-                ax.set_xlim(min(coords), max(coords))
-                pdf.savefig()
-                plt.close()
+                if sum(templated_hist) != 0:
+                    ratios = [(a / sum(templated_hist) - t / sum(cassette_snps))
+                              for a, t in zip(templated_hist, cassette_snps)]
+                    fig, ax = plt.subplots(1, figsize=(14, 6))
+                    ax.bar(x=coords, height=ratios, width=1, linewidth=0, color="darkblue")
+                    ax.set_ylabel("Fold Difference")
+                    ax.set_xlabel("vlsE position (bp)")
+                    ax.set_xlim(min(coords), max(coords))
+                    pdf.savefig()
+                    plt.close()
 
-                # Page 8: Cross-correlation of all/cassettes and templated/nontemplated snp frequencies.
-                fig, (ax_nontemp, ax_all) = plt.subplots(2, figsize=(8, 8))
-                crosscorr = signal.correlate(templated_hist, nontemplated_hist, mode="same")
-                ax_nontemp.bar(height=crosscorr, x=[x - coords[0] - len(coords) / 2 for x in coords],
+                    # Page 8: Cross-correlation of all/cassettes and templated/nontemplated snp frequencies.
+                    fig, (ax_nontemp, ax_all) = plt.subplots(2, figsize=(8, 8))
+                    crosscorr = signal.correlate(templated_hist, nontemplated_hist, mode="same")
+                    ax_nontemp.bar(height=crosscorr, x=[x - coords[0] - len(coords) / 2 for x in coords],
+                                   width=1, linewidth=0, color="black")
+                    ax_nontemp.set_title("Cross-Correlation of Nontemplated and Templated SNP Frequencies")
+                    ax_nontemp.set_xlabel("offset")
+                    crosscorr = signal.correlate(all_snps, cassette_snps, mode="same")
+                    ax_all.bar(height=crosscorr, x=[x - coords[0] - len(coords) / 2 for x in coords],
                                width=1, linewidth=0, color="black")
-                ax_nontemp.set_title("Cross-Correlation of Nontemplated and Templated SNP Frequencies")
-                ax_nontemp.set_xlabel("offset")
-                crosscorr = signal.correlate(all_snps, cassette_snps, mode="same")
-                ax_all.bar(height=crosscorr, x=[x - coords[0] - len(coords) / 2 for x in coords],
-                           width=1, linewidth=0, color="black")
-                ax_all.set_title("Cross-Correlation of Observed and Theoretical SNP Frequencies")
-                ax_all.set_xlabel("offset")
-                plt.tight_layout()
-                pdf.savefig()
-                plt.close()
+                    ax_all.set_title("Cross-Correlation of Observed and Theoretical SNP Frequencies")
+                    ax_all.set_xlabel("offset")
+                    plt.tight_layout()
+                    pdf.savefig()
+                    plt.close()
 
-                # Page 9: QQ-Plot of templated/nontemplated SNP positions.
-                fig, ax_qq = plt.subplots(figsize=(8, 8))
-                q_t, q_nt = ut.qq_values(templated_positions_trials, nontemplated_positions_trials)
-                ax_qq.plot(q_t, q_nt, color="firebrick", linewidth=2, antialiased=True)
-                ax_qq.set_title("Quantile-Quantile plot of Nontemplated and Templated SNP Positions")
-                ax_qq.set_ylabel("Non-templated SNP quantile")
-                ax_qq.set_xlabel("Templated SNP quantile")
-                plt.tight_layout()
-                pdf.savefig()
-                plt.close()
+                    # Page 9: QQ-Plot of templated/nontemplated SNP positions.
+                    fig, ax_qq = plt.subplots(figsize=(8, 8))
+                    q_t, q_nt = ut.qq_values(templated_positions_trials, nontemplated_positions_trials)
+                    ax_qq.plot(q_t, q_nt, color="firebrick", linewidth=2, antialiased=True)
+                    ax_qq.set_title("Quantile-Quantile plot of Nontemplated and Templated SNP Positions")
+                    ax_qq.set_ylabel("Non-templated SNP quantile")
+                    ax_qq.set_xlabel("Templated SNP quantile")
+                    plt.tight_layout()
+                    pdf.savefig()
+                    plt.close()
 
             plt.clf()
 
